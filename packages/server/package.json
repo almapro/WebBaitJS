@@ -1,0 +1,57 @@
+{
+  "name": "@webbait/server",
+  "version": "0.0.1",
+  "description": "WebBait server",
+  "keywords": [
+    "loopback-application",
+    "loopback"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": "12 || 14 || 16 || 17"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf dist *.tsbuildinfo .eslintcache",
+    "pretest": "npm run rebuild",
+    "migrate": "node ./dist/migrate",
+    "openapi-spec": "node ./dist/openapi-spec",
+    "prestart": "npm run rebuild",
+    "start": "node -r source-map-support/register .",
+    "dev": "cross-env PORT=3001 concurrently 'nodemon -r source-map-support/register . ' 'npm run build:watch'",
+    "prepare": "npm run build",
+    "rebuild": "npm run clean && npm run build"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "author": "AlMA PRO <alma.pro.leader@gmail.com>",
+  "license": "",
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "dependencies": {
+    "@loopback/boot": "^4.1.1",
+    "@loopback/core": "^3.1.1",
+    "@loopback/repository": "^4.1.1",
+    "@loopback/rest": "^11.1.1",
+    "@loopback/rest-explorer": "^4.1.1",
+    "@loopback/service-proxy": "^4.1.1",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@loopback/testlab": "^4.1.1",
+    "@types/node": "^12.20.46",
+    "concurrently": "^7.0.0",
+    "cross-env": "^7.0.3",
+    "nodemon": "^2.0.15",
+    "rimraf": "^3.0.2",
+    "source-map-support": "^0.5.21",
+    "typescript": "~4.5.5"
+  }
+}
