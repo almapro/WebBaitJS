@@ -9,6 +9,8 @@ import { i18n } from './locales';
 import { RTL } from './rtl';
 import { MyAppBar } from './components';
 import { HomeView } from "./views";
+import { Provider } from 'react-redux';
+import { store } from './redux';
 
 export type AppContextType = {
   mode: 'light' | 'dark';
@@ -59,12 +61,14 @@ function App() {
       <RTL>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Router>
-            <MyAppBar />
-            <Routes>
-              <Route path="/" element={<HomeView />} />
-            </Routes>
-          </Router>
+          <Provider store={store}>
+            <Router>
+              <MyAppBar />
+              <Routes>
+                <Route path="/" element={<HomeView />} />
+              </Routes>
+            </Router>
+          </Provider>
         </ThemeProvider>
       </RTL>
     </AppContext.Provider>
