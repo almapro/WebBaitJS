@@ -2,6 +2,20 @@
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.0",
-  "npmClient": "yarn"
+  "command": {
+    "bootstrap": {
+      "concurrency": 4,
+      "forceLocal": true
+    },
+    "run": {
+      "prefix": false,
+      "loglevel": "silent",
+      "stream": true,
+      "concurrency": 8,
+      "sort": false
+    }
+  },
+  "version": "indepedent",
+  "npmClient": "yarn",
+  "useWorkspaces": true
 }
