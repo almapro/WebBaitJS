@@ -18,6 +18,32 @@ export const en = {
   },
   inputs: {
     title: 'Title',
-    reportedTo: 'Reported to'
+    reportedTo: 'Reported to',
+    username: 'Username',
+    password: 'Password',
+  },
+  actions: {
+    login: {
+      errors: {
+        title: 'Login failed',
+        invalid: 'Invalid username or password',
+        timeout: 'Request timed out',
+      },
+      success: {
+        loggedIn: 'Logged in successfully',
+      },
+      login: 'Login',
+    },
+    logout: {
+      errors: {
+        title: 'Logout failed',
+        invalid: 'Invalid attepmt to logout. Maybe you are not logged in',
+        timeout: 'Request timed out',
+      },
+      success: {
+        loggedOut: 'Logged out successfully',
+      },
+      logout: 'Logout',
+    },
   }
 };

@@ -1,1 +1,1 @@
-export * from './user.slicer';
+export * from './app.slicer';

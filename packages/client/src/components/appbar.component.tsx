@@ -14,14 +14,10 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Article as ArticleIcon,
   LightModeOutlined as LightModeOutlinedIcon,
   DarkModeOutlined as DarkModeOutlinedIcon,
   Translate as TranslateIcon,
   Home as HomeIcon,
-  History as HistoryIcon,
-  Add as AddIcon,
-  FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,21 +25,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../App';
 
 export const MyAppBar: FC = () => {
+  const location = useLocation();
+  if (location.pathname === '/login') return null;
   const { t, i18n } = useTranslation();
   const [showDrawer, setShowDrawer] = useState(false);
   const { mode, setMode } = useAppContext();
-  const location = useLocation();
   const navigate = useNavigate();
   const navs: { [key: string]: [string, string, JSX.Element] } = {
     '/': [t('titles.home'), t('descriptions.home'), <HomeIcon />],
-    '/reports': [
-      t('titles.reports'),
-      t('descriptions.reports'),
-      <ArticleIcon />,
-    ],
-    '/new': [t('titles.new'), t('descriptions.new'), <AddIcon />],
-    '/recent': [t('titles.recent'), t('descriptions.recent'), <HistoryIcon />],
-    '/open': [t('titles.open'), t('descriptions.open'), <FolderOpenIcon />],
   };
   return (
     <>

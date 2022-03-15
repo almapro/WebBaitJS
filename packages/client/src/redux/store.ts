@@ -1,13 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga'
 import { rootSaga } from './sagas';
-import { UserReducer } from './slicers';
+import { AppReducer } from './slicers';
 
 const sagaMiddleware = createSagaMiddleware()
 
 export const store = configureStore({
   reducer: {
-    user: UserReducer,
+    app: AppReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: false }).prepend(sagaMiddleware),
   devTools: process.env.NODE_ENV !== "production",

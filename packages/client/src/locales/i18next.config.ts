@@ -35,6 +35,9 @@ i18n
       transKeepBasicHtmlNodesFor: ['br', 'strong', 'i'],
       useSuspense: false,
     },
+    missingKeyHandler: (lng, ns, key) => {
+      console.log('missingKeyHandler', lng, ns, key);
+    },
   });
 
 export default i18n;

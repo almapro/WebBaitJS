@@ -7,10 +7,10 @@ import {
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { i18n } from './locales';
 import { RTL } from './rtl';
-import { MyAppBar } from './components';
-import { HomeView } from "./views";
-import { Provider } from 'react-redux';
-import { store } from './redux';
+import { AuthRoute, MyAppBar, RestrictedRoute } from './components';
+import { HomeView, LoginView } from "./views";
+import { useDispatch } from 'react-redux';
+import { CHECK_LOGGED_ACTION } from './redux';
 
 export type AppContextType = {
   mode: 'light' | 'dark';
@@ -56,19 +56,26 @@ function App() {
     document.body.style.direction = language === 'ar' ? 'rtl' : 'ltr';
     setTheme(createThemeCallback());
   }, [language, mode]);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(CHECK_LOGGED_ACTION());
+  }, [dispatch]);
   return (
     <AppContext.Provider value={{ mode, setMode, language, setLanguage }}>
       <RTL>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Provider store={store}>
-            <Router>
-              <MyAppBar />
-              <Routes>
-                <Route path="/" element={<HomeView />} />
-              </Routes>
-            </Router>
-          </Provider>
+          <Router>
+            <MyAppBar />
+            <Routes>
+              <Route path='/' element={
+                <RestrictedRoute><HomeView /></RestrictedRoute>
+              } />
+              <Route path='/login' element={
+                <AuthRoute><LoginView /></AuthRoute>
+              } />
+            </Routes>
+          </Router>
         </ThemeProvider>
       </RTL>
     </AppContext.Provider>
