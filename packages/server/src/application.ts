@@ -62,7 +62,7 @@ export class WebBaitServer extends BootMixin(
     // Authorization
     const authorizationOptions: AuthorizationOptions = {
       precedence: AuthorizationDecision.DENY,
-      defaultDecision: AuthorizationDecision.DENY,
+      defaultDecision: AuthorizationDecision.ALLOW,
     };
     this.configure(AuthorizationBindings.COMPONENT).to(authorizationOptions);
     this.component(AuthorizationComponent);
