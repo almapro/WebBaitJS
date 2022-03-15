@@ -3,7 +3,7 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   name: 'user',
   settings: {
-    hiddenProperties: ['id', 'password'],
+    hiddenProperties: ['id', 'password', 'role'],
   }
 })
 export class User extends Entity {
@@ -12,7 +12,7 @@ export class User extends Entity {
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
@@ -29,6 +29,11 @@ export class User extends Entity {
   })
   password: string;
 
+  @property({
+    type: 'string',
+    default: 'user',
+  })
+  role: string;
 
   constructor(data?: Partial<User>) {
     super(data);

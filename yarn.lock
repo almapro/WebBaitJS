@@ -2061,6 +2061,15 @@
     lodash "^4.17.21"
     tslib "^2.3.1"
 
+"@loopback/authorization@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@loopback/authorization/-/authorization-0.11.1.tgz#4800a8ba5094c889accc6dcdae7f92b3a2c99779"
+  integrity sha512-60U1dvxuSNZdr1XkDv+zjE1jqO2pISRZQh4FNqEojh+ZK7X5ymMj+93+h/a1Nh5E2SBcUHgrFXqrEIyl/mjvDQ==
+  dependencies:
+    "@loopback/security" "^0.7.1"
+    debug "^4.3.3"
+    tslib "^2.3.1"
+
 "@loopback/boot@^4.1.1":
   version "4.1.1"
   resolved "https://registry.npmjs.org/@loopback/boot/-/boot-4.1.1.tgz"

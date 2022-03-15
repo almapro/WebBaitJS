@@ -35,6 +35,6 @@ export class UserAuthenticationService implements UserService<User, Credentials>
     throw new HttpErrors.Unauthorized('Incorrect username or password');
   }
   convertToUserProfile(user: User): UserProfile {
-    return { username: user.username, [securityId]: user.id ?? '' };
+    return { username: user.username, [securityId]: `${user.id}` };
   }
 }

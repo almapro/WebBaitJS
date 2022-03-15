@@ -17,6 +17,8 @@ import {
 } from '@loopback/authentication-jwt';
 import { DbDataSource } from './datasources';
 import { JwtService, PasswordHasherBindings, PasswordHasherService, UserAuthenticationService } from './services';
+import { AuthorizationBindings, AuthorizationComponent, AuthorizationDecision, AuthorizationOptions, AuthorizationTags } from '@loopback/authorization';
+import { AdminAuthorizationProvider, AdminAuthorizationProviderBindings } from './authorizers';
 
 export { ApplicationConfig };
 
@@ -57,5 +59,13 @@ export class WebBaitServer extends BootMixin(
     this.bind(UserServiceBindings.USER_SERVICE.toString()).toClass(UserAuthenticationService);
     this.bind(PasswordHasherBindings.SERVICE).toClass(PasswordHasherService);
     this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JwtService);
+    // Authorization
+    const authorizationOptions: AuthorizationOptions = {
+      precedence: AuthorizationDecision.DENY,
+      defaultDecision: AuthorizationDecision.DENY,
+    };
+    this.configure(AuthorizationBindings.COMPONENT).to(authorizationOptions);
+    this.component(AuthorizationComponent);
+    this.bind(AdminAuthorizationProviderBindings.AUTHORIZER).toProvider(AdminAuthorizationProvider).tag(AuthorizationTags.AUTHORIZER);
   }
 }

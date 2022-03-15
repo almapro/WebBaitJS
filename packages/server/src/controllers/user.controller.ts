@@ -4,7 +4,7 @@ import {
   UserServiceBindings,
 } from '@loopback/authentication-jwt';
 import { authenticate } from '@loopback/authentication';
-import { SecurityBindings, securityId } from '@loopback/security';
+import { SecurityBindings } from '@loopback/security';
 import { repository } from '@loopback/repository';
 import { genSalt, hash } from 'bcryptjs';
 import _ from 'lodash';
@@ -12,7 +12,10 @@ import { get, getModelSchemaRef, post, requestBody } from '@loopback/rest';
 import { Credentials, JwtService, UserAuthenticationService, UserProfile } from '../services';
 import { User } from '../models';
 import { UserRepository } from '../repositories';
+import { authorize } from '@loopback/authorization';
 
+@authenticate('jwt')
+@authorize({})
 export class UserController {
   constructor(
     @inject(TokenServiceBindings.TOKEN_SERVICE)
@@ -23,6 +26,9 @@ export class UserController {
     public user: UserProfile,
     @repository(UserRepository) protected userRepository: UserRepository,
   ) { }
+
+  @authenticate.skip()
+  @authorize.skip()
   @post('/login', {
     responses: {
       '200': {
@@ -50,7 +56,7 @@ export class UserController {
         'application/json': {
           schema: getModelSchemaRef(User, {
             title: 'NewUser',
-            exclude: ['id'],
+            exclude: ['id', 'role'],
           }),
         },
       },
@@ -60,13 +66,11 @@ export class UserController {
     const user = await this.userService.verifyCredentials(credentials);
     // convert a User object into a UserProfile object (reduced set of properties)
     const userProfile = this.userService.convertToUserProfile(user);
-
     // create a JSON Web Token based on the user profile
     const token = await this.jwtService.generateToken(userProfile);
     return { token };
   }
 
-  @authenticate('jwt')
   @get('/me', {
     responses: {
       '200': {
@@ -90,10 +94,10 @@ export class UserController {
     @inject(SecurityBindings.USER)
     currentUserProfile: UserProfile,
   ): Promise<{ username: string }> {
-    console.log(currentUserProfile);
     return { username: currentUserProfile.username };
   }
 
+  @authenticate.skip()
   @post('/signup', {
     responses: {
       '200': {
@@ -101,7 +105,7 @@ export class UserController {
         content: {
           'application/json': {
             schema: getModelSchemaRef(User, {
-              exclude: ['id', 'password'],
+              exclude: ['id', 'password', 'role'],
             }),
           },
         },
@@ -115,16 +119,15 @@ export class UserController {
           schema: getModelSchemaRef(User, {
             title: 'New User',
             exclude: ['id'],
+            optional: ['role'],
           }),
         },
       },
     })
     newUser: User,
-  ): Promise<Omit<User, 'password' | typeof securityId>> {
+  ): Promise<Omit<User, 'password' | 'role'>> {
     const password = await hash(newUser.password, await genSalt());
-
-    const savedUser = await this.userRepository.create({ username: newUser.username, password });
-
+    const savedUser = await this.userRepository.create({ username: newUser.username, password, role: newUser.role });
     return savedUser;
   }
 }
