@@ -9,6 +9,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
+import { useTitle } from "react-use";
 
 export const LoginView = () => {
   const [username, setLocalUsername] = useState('');
@@ -24,6 +25,7 @@ export const LoginView = () => {
     dispatch(LOGIN_ACTION({ username, password }));
   }
   const { t } = useTranslation();
+  useTitle(`WebBait - ${t('titles.login')}`);
   return (
     <Grid
       container

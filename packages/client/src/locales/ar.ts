@@ -3,10 +3,12 @@ export const ar = {
   changeLanguage: 'تغيير اللغة إلى الإتجليزية',
   showSidebar: 'عرض قائمة الصفحات',
   titles: {
+    login: 'تسجيل الدخول',
     home: 'الرئيسية',
     users: 'المستخدمين',
   },
   descriptions: {
+    login: '',
     home: 'الصفحة الرئيسية',
     users: 'قائمة المستخدمين',
   },

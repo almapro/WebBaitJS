@@ -3,10 +3,12 @@ export const en = {
   changeLanguage: 'Change language to Arabic',
   showSidebar: 'Show navigation sidebar',
   titles: {
+    login: 'Login',
     home: 'Home',
     users: 'Users',
   },
   descriptions: {
+    login: '',
     home: 'Home page',
     users: 'List of users',
   },
