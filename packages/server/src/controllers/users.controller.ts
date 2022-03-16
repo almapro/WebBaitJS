@@ -1,3 +1,4 @@
+import { genSalt, hash } from 'bcryptjs';
 import { authenticate } from '@loopback/authentication';
 import { authorize } from '@loopback/authorization';
 import {
@@ -48,7 +49,9 @@ export class UsersController {
     })
     user: Omit<User, 'id' | 'role'>,
   ): Promise<Omit<User, 'password'>> {
-    return this.userRepository.create(user);
+    const password = await hash(user.password, await genSalt());
+    const savedUser = await this.userRepository.create({ username: user.username, password });
+    return savedUser;
   }
 
   @authorize({ allowedRoles: ['admin'] })
@@ -99,6 +102,9 @@ export class UsersController {
     user: Omit<User, 'id'>,
     @param.where(User) where?: Where<User>,
   ): Promise<Count> {
+    if (user.password) {
+      user.password = await hash(user.password, await genSalt());
+    }
     return this.userRepository.updateAll(user, where);
   }
 
@@ -135,6 +141,9 @@ export class UsersController {
     })
     user: Omit<User, 'id'>,
   ): Promise<void> {
+    if (user.password) {
+      user.password = await hash(user.password, await genSalt());
+    }
     await this.userRepository.updateById(id, user);
   }
 
