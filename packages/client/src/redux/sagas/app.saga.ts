@@ -93,10 +93,42 @@ export function* watchCheckLoggedSaga() {
   yield takeLatest(CHECK_LOGGED_ACTION.toString(), checkLoggedSaga);
 }
 
+export const TOGGLE_ACTION_ERROR_ACTION = createAction('TOGGLE_ACTION_ERROR_ACTION', (payload: string) => ({
+  payload
+}));
+
+export function* toggleActionErrorSaga(action: ReturnType<typeof TOGGLE_ACTION_ERROR_ACTION>) {
+  yield put(SET_ACTION_ERROR(true));
+  yield put(SET_ACTION_ERROR_MESSAGE(action.payload));
+  yield delay(5000);
+  yield put(SET_ACTION_ERROR(false));
+}
+
+export function* watchToggleActionErrorSaga() {
+  yield takeLatest(TOGGLE_ACTION_ERROR_ACTION.toString(), toggleActionErrorSaga);
+}
+
+export const TOGGLE_ACTION_SUCCESS_ACTION = createAction('TOGGLE_ACTION_SUCCESS_ACTION', (payload: string) => ({
+  payload
+}));
+
+export function* toggleActionSuccessSaga(action: ReturnType<typeof TOGGLE_ACTION_SUCCESS_ACTION>) {
+  yield put(SET_ACTION_ERROR(false));
+  yield put(SET_ACTION_ERROR_MESSAGE(action.payload));
+  yield delay(5000);
+  yield put(SET_ACTION_ERROR(false));
+}
+
+export function* watchToggleActionSuccessSaga() {
+  yield takeLatest(TOGGLE_ACTION_SUCCESS_ACTION.toString(), toggleActionSuccessSaga);
+}
+
 export function* watchAppSagas() {
   yield all([
     watchLoginSaga(),
     watchLogoutSaga(),
     watchCheckLoggedSaga(),
+    watchToggleActionErrorSaga(),
+    watchToggleActionSuccessSaga()
   ]);
 }
