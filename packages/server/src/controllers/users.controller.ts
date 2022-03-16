@@ -33,7 +33,7 @@ export class UsersController {
   @post('/users')
   @response(200, {
     description: 'User model instance',
-    content: { 'application/json': { schema: getModelSchemaRef(User) } },
+    content: { 'application/json': { schema: getModelSchemaRef(User, { exclude: ['password'] }) } },
   })
   async create(
     @requestBody({
