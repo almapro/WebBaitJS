@@ -4,23 +4,16 @@ export const en = {
   showSidebar: 'Show navigation sidebar',
   titles: {
     home: 'Home',
-    new: 'New report',
-    reports: 'Reports',
-    recent: 'Recent reports',
-    open: 'Open report',
+    users: 'Users',
   },
   descriptions: {
     home: 'Home page',
-    new: 'Create a new report',
-    reports: 'Show all reports',
-    recent: 'Show recent reports',
-    open: 'Open a saved report file',
+    users: 'List of users',
   },
   inputs: {
-    title: 'Title',
-    reportedTo: 'Reported to',
     username: 'Username',
     password: 'Password',
+    role: 'Role',
   },
   actions: {
     login: {
@@ -37,7 +30,7 @@ export const en = {
     logout: {
       errors: {
         title: 'Logout failed',
-        invalid: 'Invalid attepmt to logout. Maybe you are not logged in',
+        invalid: 'Invalid attempt to logout. Maybe you are not logged in',
         timeout: 'Request timed out',
       },
       success: {
