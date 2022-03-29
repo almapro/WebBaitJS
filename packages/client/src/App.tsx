@@ -8,7 +8,7 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { i18n } from './locales';
 import { RTL } from './rtl';
 import { AuthRoute, MyAppBar, RestrictedRoute } from './components';
-import { HomeView, LoginView } from "./views";
+import { DashboardView, LoginView } from "./views";
 import { useDispatch } from 'react-redux';
 import { CHECK_LOGGED_ACTION } from './redux';
 
@@ -69,7 +69,7 @@ function App() {
             <MyAppBar />
             <Routes>
               <Route path='/' element={
-                <RestrictedRoute><HomeView /></RestrictedRoute>
+                <RestrictedRoute><DashboardView /></RestrictedRoute>
               } />
               <Route path='/login' element={
                 <AuthRoute><LoginView /></AuthRoute>

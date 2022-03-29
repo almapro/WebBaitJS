@@ -4,12 +4,12 @@ export const en = {
   showSidebar: 'Show navigation sidebar',
   titles: {
     login: 'Login',
-    home: 'Home',
+    dashboard: 'Dashboard',
     users: 'Users',
   },
   descriptions: {
     login: '',
-    home: 'Home page',
+    dashboard: 'Shows statistics',
     users: 'List of users',
   },
   inputs: {

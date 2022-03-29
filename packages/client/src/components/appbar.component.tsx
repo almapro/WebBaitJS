@@ -17,7 +17,7 @@ import {
   LightModeOutlined as LightModeOutlinedIcon,
   DarkModeOutlined as DarkModeOutlinedIcon,
   Translate as TranslateIcon,
-  Home as HomeIcon,
+  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ export const MyAppBar: FC = () => {
   const { mode, setMode } = useAppContext();
   const navigate = useNavigate();
   const navs: { [key: string]: [string, string, JSX.Element] } = {
-    '/': [t('titles.home'), t('descriptions.home'), <HomeIcon />],
+    '/': [t('titles.dashboard'), t('descriptions.dashboard'), <DashboardIcon />],
   };
   return (
     <>

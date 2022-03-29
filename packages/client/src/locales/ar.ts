@@ -4,12 +4,12 @@ export const ar = {
   showSidebar: 'عرض قائمة الصفحات',
   titles: {
     login: 'تسجيل الدخول',
-    home: 'الرئيسية',
+    dashboard: 'لوحة التحكم',
     users: 'المستخدمين',
   },
   descriptions: {
     login: '',
-    home: 'الصفحة الرئيسية',
+    dashboard: 'عرض الإحصائيات',
     users: 'قائمة المستخدمين',
   },
   inputs: {
