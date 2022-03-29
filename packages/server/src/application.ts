@@ -19,12 +19,14 @@ import { DbDataSource } from './datasources';
 import { JwtService, PasswordHasherBindings, PasswordHasherService, UserAuthenticationService } from './services';
 import { AuthorizationBindings, AuthorizationComponent, AuthorizationDecision, AuthorizationOptions, AuthorizationTags } from '@loopback/authorization';
 import { AdminAuthorizationProvider, AdminAuthorizationProviderBindings } from './authorizers';
+import { WebSocketServer } from './websocket.server';
 
 export { ApplicationConfig };
 
 export class WebBaitServer extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
 ) {
+  wsServer: WebSocketServer;
   constructor(options: ApplicationConfig = {}) {
     super(options);
 

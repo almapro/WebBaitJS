@@ -1,4 +1,6 @@
-import {ApplicationConfig, WebBaitServer} from './application';
+import { ApplicationConfig, WebBaitServer } from './application';
+import { AdminsWebSocketController, AgentsWebSocketController } from './controllers';
+import { WebSocketServer } from './websocket.server';
 
 export * from './application';
 
@@ -6,6 +8,35 @@ export async function main(options: ApplicationConfig = {}) {
   const app = new WebBaitServer(options);
   await app.boot();
   await app.start();
+  // Mount websocket server
+  if (app.restServer.httpServer) {
+    app.wsServer = new WebSocketServer(app.restServer.httpServer, app, { transports: ['websocket'] });
+    // app.bind('servers.websocket.server1').to(app.wsServer);
+    app.wsServer.use((socket, next) => {
+      console.log('Global middleware - socket:', socket.id);
+      next();
+    });
+    // Add a route
+    const ns = app.wsServer.route(AgentsWebSocketController, '/agents/ws');
+    ns.use((socket, next) => {
+      console.log(
+        'Middleware for namespace %s - socket: %s',
+        socket.nsp.name,
+        socket.id,
+      );
+      next();
+    });
+    const ans = app.wsServer.route(AdminsWebSocketController, '/admins');
+    ans.use((socket, next) => {
+      console.log(
+        'Middleware for namespace %s - socket: %s',
+        socket.nsp.name,
+        socket.id,
+      );
+      next();
+    });
+    await app.wsServer.start();
+  }
 
   const url = app.restServer.url;
   console.log(`Server is running at ${url}`);

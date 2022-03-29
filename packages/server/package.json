@@ -19,7 +19,7 @@
     "migrate": "node ./dist/migrate",
     "openapi-spec": "node ./dist/openapi-spec",
     "prestart": "npm run rebuild",
-    "start": "node -r source-map-support/register .",
+    "start": "cross-env PORT=3001 node -r source-map-support/register .",
     "dev": "cross-env PORT=3001 concurrently 'nodemon -r source-map-support/register . ' 'npm run build:watch'",
     "prepare": "npm run build",
     "rebuild": "npm run clean && npm run build"
@@ -45,8 +45,12 @@
     "@loopback/rest": "^11.1.1",
     "@loopback/rest-explorer": "^4.1.1",
     "@loopback/service-proxy": "^4.1.1",
+    "@loopback/socketio": "^0.5.1",
+    "@types/uuid": "^8.3.4",
     "loopback-connector-mysql": "^5.4.4",
-    "tslib": "^2.0.0"
+    "socket.io": "^4.4.1",
+    "tslib": "^2.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@loopback/testlab": "^4.1.1",
