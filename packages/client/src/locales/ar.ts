@@ -6,6 +6,11 @@ export const ar = {
     login: 'تسجيل الدخول',
     dashboard: 'لوحة التحكم',
     users: 'المستخدمين',
+    charts: {
+      agents_per_month: 'عدد الضحايا في الشهر',
+      agents_by_country: 'عدد الضحايا حسب الدولة',
+      agents_by_site: 'عدد الضحايا حسب الموقع',
+    }
   },
   descriptions: {
     login: '',

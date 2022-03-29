@@ -6,6 +6,11 @@ export const en = {
     login: 'Login',
     dashboard: 'Dashboard',
     users: 'Users',
+    charts: {
+      agents_per_month: 'Agents per month',
+      agents_by_country: 'Agents by country',
+      agents_by_site: 'Agents by site',
+    }
   },
   descriptions: {
     login: '',
