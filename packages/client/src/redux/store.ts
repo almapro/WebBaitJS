@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga'
 import { rootSaga } from './sagas';
-import { AppReducer, StatisticsReducer, UsersReducer } from './slicers';
+import { AgentsReducer, AppReducer, StatisticsReducer, UsersReducer } from './slicers';
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -10,6 +10,7 @@ export const store = configureStore({
     app: AppReducer,
     users: UsersReducer,
     statistics: StatisticsReducer,
+    agents: AgentsReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: false }).prepend(sagaMiddleware),
   devTools: process.env.NODE_ENV !== "production",
