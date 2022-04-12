@@ -2407,6 +2407,16 @@
     prop-types "^15.7.2"
     react-is "^17.0.2"
 
+"@mui/x-data-grid@^5.7.0":
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-5.7.0.tgz#fbb87989c201628f75dab419d6df44e9bb289bf1"
+  integrity sha512-mWk3IzClmGGsFfz3EzdifkQRhjNYkkyfCNMfQu1C6iJDPtkt5xmi71M+jMRv+lsupMEnrTv17j+6oM6YCqoM3Q==
+  dependencies:
+    "@mui/utils" "^5.4.4"
+    clsx "^1.1.1"
+    prop-types "^15.8.1"
+    reselect "^4.1.5"
+
 "@nivo/annotations@0.79.1":
   version "0.79.1"
   resolved "https://registry.yarnpkg.com/@nivo/annotations/-/annotations-0.79.1.tgz#c1b93a1facf55e3f32e2af1b8fb0ba1bebc01910"
@@ -11089,6 +11099,11 @@ modify-values@^1.0.0:
   resolved "https://registry.npmjs.org/modify-values/-/modify-values-1.0.1.tgz"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
+moment@^2.29.1:
+  version "2.29.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
+  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/move-concurrently/-/move-concurrently-1.0.1.tgz"
@@ -13180,7 +13195,7 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -14210,6 +14225,13 @@ rxjs@^6.1.0, rxjs@^6.4.0, rxjs@^6.6.0, rxjs@^6.6.3:
   integrity sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==
   dependencies:
     tslib "^1.9.0"
+
+rxjs@^7.5.5:
+  version "7.5.5"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.5.tgz#2ebad89af0f560f460ad5cc4213219e1f7dd4e9f"
+  integrity sha512-sy+H0pQofO95VDmFLzyaw9xNJU4KTRSwQIGM6+iG3SypAtCiLDzpeG8sJrNCWn2Up9km+KhkvTdbkrdy+yzZdw==
+  dependencies:
+    tslib "^2.1.0"
 
 safe-buffer@5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
