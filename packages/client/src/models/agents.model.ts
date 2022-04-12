@@ -3,4 +3,5 @@ export type Agents = {
   agentId: string;
   domain: string;
   url: string;
+  connected: boolean;
 }

@@ -18,11 +18,13 @@ import {
   DarkModeOutlined as DarkModeOutlinedIcon,
   Translate as TranslateIcon,
   Dashboard as DashboardIcon,
+  Webhook as WebhookIcon,
 } from '@mui/icons-material';
 import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../App';
+import _ from "lodash";
 
 export const MyAppBar: FC = () => {
   const location = useLocation();
@@ -33,7 +35,22 @@ export const MyAppBar: FC = () => {
   const navigate = useNavigate();
   const navs: { [key: string]: [string, string, JSX.Element] } = {
     '/': [t('titles.dashboard'), t('descriptions.dashboard'), <DashboardIcon />],
+    '/agents': [t('titles.agents'), t('descriptions.agents'), <WebhookIcon />],
+    '/test-agent': [t('titles.test_agent'), t('descriptions.test_agent'), <WebhookIcon />],
   };
+  let currentTitle = '';
+  let foundNavPath: string | undefined = '';
+  const currentNav = navs[location.pathname];
+  if (currentNav) currentTitle = currentNav[0];
+  else {
+    foundNavPath = _.keys(navs).find(nav => {
+      if (nav === '/') return;
+      if (location.pathname.includes(nav)) {
+        return nav;
+      }
+    });
+    if (foundNavPath) currentTitle = navs[foundNavPath][0];
+  }
   return (
     <>
       <AppBar position="static" enableColorOnDark>
@@ -51,7 +68,7 @@ export const MyAppBar: FC = () => {
             </IconButton>
           </Tooltip>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            {navs[location.pathname][0]}
+            {currentTitle}
           </Typography>
           <Tooltip title={t('changeLanguage') as string}>
             <IconButton
@@ -94,7 +111,7 @@ export const MyAppBar: FC = () => {
               <ListItem
                 key={key}
                 button
-                selected={key === location.pathname}
+                selected={key === foundNavPath || key === location.pathname}
                 onClick={() => navigate(key)}
               >
                 <ListItemIcon>{navs[key][2]}</ListItemIcon>

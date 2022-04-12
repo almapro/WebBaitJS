@@ -8,6 +8,7 @@ import { ResponsiveSunburst, ComputedDatum } from "@nivo/sunburst";
 import { ResponsiveLine, PointTooltip } from "@nivo/line";
 import { AgentsByCountry, AgentsBySite, RootState, FETCH_AGENTS_BY_COUNTRY_ACTION, FETCH_AGENTS_BY_SITE_ACTION, FETCH_AGENTS_PER_MONTH_ACTION, FETCH_AGENTS_ACTION } from "../redux";
 import { useDispatch, useSelector } from "react-redux";
+import { connectAdminWebsocket } from "../services";
 
 const CustomLineTooltip: PointTooltip = ({ point }) => {
   return (
@@ -65,6 +66,7 @@ export const DashboardView = () => {
     dispatch(FETCH_AGENTS_BY_COUNTRY_ACTION());
     dispatch(FETCH_AGENTS_BY_SITE_ACTION());
     dispatch(FETCH_AGENTS_ACTION());
+    connectAdminWebsocket();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (

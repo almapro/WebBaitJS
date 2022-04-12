@@ -19,14 +19,14 @@ export function* fetchAgentsSaga(action: ReturnType<typeof FETCH_AGENTS_ACTION>)
   yield put(SET_FETCHING(true));
   try {
     type RaceResult = {
-      result: AxiosResponse<Agents[]>
+      result: AxiosResponse<Omit<Agents, 'connected'>[]>
     }
     const { result }: RaceResult = yield race({
       result: call(agentsService.fetchAll, action.payload.filter, action.payload.pathParams),
       timeout: delay(5000)
     });
     if (result) {
-      yield put(SET_AGENTS(result.data));
+      yield put(SET_AGENTS(result.data.map(agent => ({ ...agent, connected: false }))));
     } else {
       yield put(TOGGLE_ACTION_ERROR_ACTION('actions.agents.errors.timeout'));
     }

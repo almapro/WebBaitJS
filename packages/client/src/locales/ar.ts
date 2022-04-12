@@ -6,6 +6,17 @@ export const ar = {
     login: 'تسجيل الدخول',
     dashboard: 'لوحة التحكم',
     users: 'المستخدمين',
+    agents: 'الضحايا',
+    agent: 'الضحية',
+    test_agent: 'تجربة الضحية',
+    back: 'رجوع',
+    cancel: 'إلغاء',
+    close: 'إغلاق',
+    send_result: 'إرسال النتيجة',
+    acknowledge_command: 'إرسال أمر الإستلام',
+    status: 'الحالة',
+    connected: 'متصل',
+    disconnected: 'غير متصل',
     charts: {
       agents_per_month: 'عدد الضحايا في الشهر',
       agents_by_country: 'عدد الضحايا حسب الدولة',
@@ -16,11 +27,15 @@ export const ar = {
     login: '',
     dashboard: 'عرض الإحصائيات',
     users: 'قائمة المستخدمين',
+    agents: 'قائمة الضحايا',
+    test_agent: 'إجراء تجارب الإتصال',
   },
   inputs: {
     username: 'إسم المستخدم',
     password: 'كلمة المرور',
-    role: 'دور المستخدم'
+    role: 'دور المستخدم',
+    c2host: 'مركز إتصال الضحايا',
+    result: 'النتيجة',
   },
   actions: {
     login: {
@@ -45,5 +60,13 @@ export const ar = {
       },
       logout: 'تسجيل الخروج',
     },
+    agents: {},
+  },
+  messages: {
+    agents: {
+      errors: {
+        no_such_agent: 'لا توجد ضحية بهذا المعرف',
+      }
+    }
   }
 };

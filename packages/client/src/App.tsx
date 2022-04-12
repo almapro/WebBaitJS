@@ -8,7 +8,7 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { i18n } from './locales';
 import { RTL } from './rtl';
 import { AuthRoute, MyAppBar, RestrictedRoute } from './components';
-import { DashboardView, LoginView } from "./views";
+import { AgentsView, AgentView, DashboardView, LoginView, TestAgentView } from "./views";
 import { useDispatch } from 'react-redux';
 import { CHECK_LOGGED_ACTION } from './redux';
 
@@ -70,6 +70,15 @@ function App() {
             <Routes>
               <Route path='/' element={
                 <RestrictedRoute><DashboardView /></RestrictedRoute>
+              } />
+              <Route path='/agents' element={
+                <RestrictedRoute><AgentsView /></RestrictedRoute>
+              } />
+              <Route path='/agents/:agentId' element={
+                <RestrictedRoute><AgentView /></RestrictedRoute>
+              } />
+              <Route path='/test-agent' element={
+                <RestrictedRoute><TestAgentView /></RestrictedRoute>
               } />
               <Route path='/login' element={
                 <AuthRoute><LoginView /></AuthRoute>

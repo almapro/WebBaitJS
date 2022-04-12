@@ -1,6 +1,5 @@
 import Axios, { AxiosResponse } from "axios";
 import { Manager, Socket } from "socket.io-client";
-import { AgentCommandResults, AgentCommands } from "../models";
 
 export const websocketManager = new Manager(
   `ws://${process.env.REACT_APP_WS_HOST ? process.env.REACT_APP_WS_HOST : 'localhost'}:${process.env.REACT_APP_WS_PORT ? +process.env.REACT_APP_WS_PORT : 3001}`,
@@ -20,13 +19,10 @@ export const connectAdminWebsocket = async () => {
         token,
       },
     }).connect();
-    websocketService.on('result', async (result: AgentCommandResults) => {
-      console.log(result);
-    });
     websocketService.on('error', (msg: string) => {
-      // if (msg.startsWith('Invalid token')) {
-      alert(msg);
-      // }
+      if (msg.startsWith('Invalid token')) {
+        location.reload();
+      }
     });
   }
 }
@@ -42,19 +38,12 @@ export const connectClientWebsocket = async () => {
       clientWebsocketService = websocketManager.socket('/agents/ws', {
         auth: {
           token,
-          agentId,
         },
       }).connect();
-      clientWebsocketService.on('cmd', (cmd: AgentCommands) => {
-        console.log('cmd', cmd);
-      });
       clientWebsocketService.on('error', async (msg: string) => {
         if (msg.startsWith('Invalid token')) {
           localStorage.removeItem('WEBBAIT_CLIENT_TOKEN');
-          await connectClientWebsocket();
-        }
-        if (msg.startsWith('Invalid agent id')) {
-          localStorage.removeItem('WEBBAIT_CLIENT_AGENT_ID');
+          if (clientWebsocketService) clientWebsocketService.disconnect()
           await connectClientWebsocket();
         }
       });
@@ -65,8 +54,11 @@ export const connectClientWebsocket = async () => {
           'x-agent-id': agentId,
         }
       });
-      const res: AxiosResponse<{ token: string }> = await req.post('/agents/activity');
-      localStorage.setItem('WEBBAIT_CLIENT_TOKEN', res.data.token);
+      const res: AxiosResponse<{ token: string }> | null = await req.post('/agents/activity').catch(() => {
+        localStorage.removeItem('WEBBAIT_CLIENT_AGENT_ID');
+        return null;
+      });
+      if (res) localStorage.setItem('WEBBAIT_CLIENT_TOKEN', res.data.token);
       await connectClientWebsocket();
     }
   } else {

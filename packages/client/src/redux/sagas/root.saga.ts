@@ -1,4 +1,5 @@
 import { all } from "redux-saga/effects";
+import { watchAgentCommandsSagas } from "./agent-commands.saga";
 import { watchAgentsSagas } from "./agents.saga";
 import { watchAppSagas } from "./app.saga";
 import { watchStatisticsSagas } from "./statistics.saga";
@@ -10,5 +11,6 @@ export function* rootSaga() {
     watchUsersSagas(),
     watchStatisticsSagas(),
     watchAgentsSagas(),
+    watchAgentCommandsSagas(),
   ]);
 }

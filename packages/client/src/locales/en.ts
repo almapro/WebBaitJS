@@ -6,6 +6,17 @@ export const en = {
     login: 'Login',
     dashboard: 'Dashboard',
     users: 'Users',
+    agents: 'Agents',
+    agent: 'Agent',
+    test_agent: 'Test Agent',
+    back: 'Back',
+    cancel: 'Cancel',
+    close: 'Close',
+    send_result: 'Send Result',
+    acknowledge_command: 'Acknowledge Command',
+    status: 'Status',
+    connected: 'connected',
+    disconnected: 'disconnected',
     charts: {
       agents_per_month: 'Agents per month',
       agents_by_country: 'Agents by country',
@@ -16,11 +27,15 @@ export const en = {
     login: '',
     dashboard: 'Shows statistics',
     users: 'List of users',
+    agents: 'List of agents',
+    test_agent: 'Perform agent communication tests',
   },
   inputs: {
     username: 'Username',
     password: 'Password',
     role: 'Role',
+    c2host: 'Agents C2 host',
+    result: 'Result',
   },
   actions: {
     login: {
@@ -45,5 +60,13 @@ export const en = {
       },
       logout: 'Logout',
     },
+    agents: {},
+  },
+  messages: {
+    agents: {
+      errors: {
+        no_such_agent: 'NO SUCH AN AGENT',
+      }
+    }
   }
 };
