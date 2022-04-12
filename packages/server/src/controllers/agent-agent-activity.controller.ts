@@ -65,7 +65,7 @@ export class AgentAgentActivityController {
     return { agentId, token }
   }
 
-  @post('/agents/activitiy', {
+  @post('/agents/activity', {
     responses: {
       '200': {
         description: 'WS token',

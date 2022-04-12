@@ -1,9 +1,17 @@
+import { inject } from '@loopback/core';
 import { repository } from '@loopback/repository';
 import _ from 'lodash';
+import { Subject } from 'rxjs';
 import { Socket } from 'socket.io';
 import { ws } from '../decorators';
 import { AgentActivity } from '../models';
-import { AgentRepository } from '../repositories';
+import { AgentRepository, AgentWebSocketTokenRepository } from '../repositories';
+import { AgentCommand, AgentConnection } from './admins-websocket.controller';
+
+export type AgentCmdReceived = {
+  cmdId: string;
+  receivedAt?: Date;
+}
 
 export type AgentCommandResult = {
   agentId: string;
@@ -19,6 +27,16 @@ export class AgentsWebSocketController {
     private socket: Socket,
     @repository(AgentRepository)
     private agentRepository: AgentRepository,
+    @repository(AgentWebSocketTokenRepository)
+    private agentWebSocketTokenRepository: AgentWebSocketTokenRepository,
+    @inject('rxjs.agent-connection')
+    private agentConnection: Subject<AgentConnection>,
+    @inject('rxjs.agent-commands')
+    private agentCommands: Subject<AgentCommand & { cmdId: string }>,
+    @inject('rxjs.agent-command-received')
+    private agentCommandReceived: Subject<AgentCmdReceived>,
+    @inject('rxjs.agent-command-results')
+    private agentCommandResults: Subject<AgentCommandResult>,
   ) { }
 
   /**
@@ -26,47 +44,71 @@ export class AgentsWebSocketController {
    * @param socket
    */
   @ws.connect()
-  connect(socket: Socket) {
+  async connect(socket: Socket) {
     console.log('Client connected: %s', this.socket.id);
-    const agentId = socket.handshake.auth.agentId;
     const userAgent = socket.handshake.headers['user-agent'] as string;
     const mac = socket.handshake.auth.mac;
     const token = socket.handshake.auth.token;
-    console.log('agentId: %s, token: %s', agentId, token);
-    if (agentId && token) {
-      this.agentRepository.findOne({ where: { agentId }, include: [{ relation: 'tokens' }] }).then(agent => {
-        if (agent) {
-          agent.tokens.forEach(t => {
-            if (t.expiresAt <= new Date().toISOString()) {
-              agent.tokens = _.without(agent.tokens, t);
+    console.log('token: %s', token);
+    if (token) {
+      const foundToken = await this.agentWebSocketTokenRepository.findOne({
+        where: {
+          token,
+        },
+      });
+      if (foundToken && new Date(foundToken.expiresAt) > new Date()) {
+        const foundAgent = await this.agentRepository.findOne({
+          where: {
+            id: foundToken.agentId,
+          },
+        });
+        if (foundAgent) {
+          this.agentConnection.next({
+            agentId: foundAgent.agentId,
+            connected: true
+          });
+          await this.agentRepository.tokens(foundAgent.id).patch({ used: true, usedAt: foundToken.usedAt ? foundToken.usedAt : new Date().toISOString() }, { token });
+          const activity: Partial<AgentActivity> = {
+            agentId: +`${foundAgent.id}`,
+            ip: socket.handshake.address,
+            userAgent,
+            type: 'websocket-connect',
+          };
+          if (mac) activity.mac = mac;
+          await this.agentRepository.activities(foundAgent.id).create(activity);
+          const cmds = await this.agentRepository.cmds(foundAgent.id).find({ include: [{ relation: 'result' }] });
+          cmds.forEach(cmd => {
+            if (!cmd.received || !cmd.result) {
+              socket.emit('cmd', {
+                cmdId: cmd.cmdId,
+                cmd: cmd.cmd,
+              });
             }
           });
-          const foundToken = _.find(agent.tokens, { token });
-          if (foundToken) {
-            this.agentRepository.tokens(agent.id).patch({ used: true, usedAt: foundToken.usedAt ? foundToken.usedAt : new Date().toISOString() }, { token });
-            const activity: Partial<AgentActivity> = {
-              agentId: +`${agent.id}`,
-              ip: socket.handshake.address,
-              userAgent,
-              type: 'websocket-connect',
-            };
-            if (mac) activity.mac = mac;
-            this.agentRepository.activities(agent.id).create(activity);
-            socket.join(agentId);
-            socket.emit('connected', agentId);
-          } else {
-            socket.emit('error', `Invalid token: ${token}`);
-            socket.disconnect();
-          }
-        } else {
-          socket.emit('error', `Invalid agent id: ${agentId}`);
-          socket.disconnect();
+          this.agentCommands.subscribe({
+            next: (cmd: AgentCommand & { cmdId: string }) => {
+              socket.emit('cmd', cmd);
+            },
+          });
         }
-      });
+      } else {
+        socket.emit('error', `Invalid token: ${token}`);
+        socket.disconnect();
+      }
     } else {
-      socket.emit('error', `Missing agent id or token: {agentId: ${agentId}, token: ${token}}`);
+      socket.emit('error', `Missing token: ${token}`);
       socket.disconnect();
     }
+  }
+
+  /**
+   * Register a handler for 'cmd received' events
+   * @param cmd received
+   */
+  @ws.subscribe('cmd received')
+  async handleCmdReceived(cmdReceived: AgentCmdReceived) {
+    console.log('cmd received: %s', cmdReceived);
+    this.agentCommandReceived.next(cmdReceived);
   }
 
   /**
@@ -76,7 +118,7 @@ export class AgentsWebSocketController {
   @ws.subscribe('result')
   handleResult(result: AgentCommandResult) {
     console.log('result: %s', result);
-    this.socket.to(result.agentId).emit('result', result);
+    this.agentCommandResults.next(result);
   }
 
   /**
@@ -84,7 +126,25 @@ export class AgentsWebSocketController {
    * @param socket
    */
   @ws.disconnect()
-  disconnect() {
+  async disconnect() {
     console.log('Client disconnected: %s', this.socket.id);
+    const foundToken = await this.agentWebSocketTokenRepository.findOne({
+      where: {
+        token: this.socket.handshake.auth.token,
+      },
+    });
+    if (foundToken && new Date(foundToken.expiresAt) > new Date()) {
+      const foundAgent = await this.agentRepository.findOne({
+        where: {
+          id: foundToken.agentId,
+        },
+      });
+      if (foundAgent) {
+        this.agentConnection.next({
+          agentId: foundAgent.agentId,
+          connected: false
+        });
+      }
+    }
   }
 }

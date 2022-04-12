@@ -48,6 +48,7 @@
     "@loopback/socketio": "^0.5.1",
     "@types/uuid": "^8.3.4",
     "loopback-connector-mysql": "^5.4.4",
+    "rxjs": "^7.5.5",
     "socket.io": "^4.4.1",
     "tslib": "^2.0.0",
     "uuid": "^8.3.2"

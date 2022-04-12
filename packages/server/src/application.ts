@@ -20,6 +20,8 @@ import { JwtService, PasswordHasherBindings, PasswordHasherService, UserAuthenti
 import { AuthorizationBindings, AuthorizationComponent, AuthorizationDecision, AuthorizationOptions, AuthorizationTags } from '@loopback/authorization';
 import { AdminAuthorizationProvider, AdminAuthorizationProviderBindings } from './authorizers';
 import { WebSocketServer } from './websocket.server';
+import { Subject } from 'rxjs';
+import { AgentCmdReceived, AgentCommand, AgentCommandResult, AgentConnection } from './controllers';
 
 export { ApplicationConfig };
 
@@ -69,5 +71,9 @@ export class WebBaitServer extends BootMixin(
     this.configure(AuthorizationBindings.COMPONENT).to(authorizationOptions);
     this.component(AuthorizationComponent);
     this.bind(AdminAuthorizationProviderBindings.AUTHORIZER).toProvider(AdminAuthorizationProvider).tag(AuthorizationTags.AUTHORIZER);
+    this.bind('rxjs.agent-connection').to(new Subject<AgentConnection>());
+    this.bind('rxjs.agent-commands').to(new Subject<AgentCommand>());
+    this.bind('rxjs.agent-command-received').to(new Subject<AgentCmdReceived>());
+    this.bind('rxjs.agent-command-results').to(new Subject<AgentCommandResult>());
   }
 }

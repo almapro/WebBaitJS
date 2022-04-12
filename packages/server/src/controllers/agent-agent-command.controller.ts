@@ -31,7 +31,7 @@ export class AgentAgentCommandController {
         description: 'Array of Agent has many AgentCommand',
         content: {
           'application/json': {
-            schema: { type: 'array', items: getModelSchemaRef(AgentCommand) },
+            schema: { type: 'array', items: getModelSchemaRef(AgentCommand, { includeRelations: true }) },
           },
         },
       },

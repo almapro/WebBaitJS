@@ -1,7 +1,6 @@
 import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  name: 'user',
   settings: {
     hiddenProperties: ['id', 'password', 'role'],
   }
