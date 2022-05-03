@@ -17,6 +17,7 @@ import { FETCH_AGENTS_ACTION, FETCH_AGENT_COMMANDS_ACTION, RootState, UPDATE_AGE
 import { connectAdminWebsocket, websocketService } from '../services';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import moment from "moment";
+import { useSnackbar } from 'notistack';
 
 export type AgentConnection = {
   agentId: string;
@@ -31,6 +32,7 @@ export type AgentCmdReceived = {
 export type ActionsButtonOption = {
   label: string;
   action: () => void;
+  enabled?: boolean | (() => boolean);
 }
 
 export const ActionsButton: FC<{ options: ActionsButtonOption[] }> = ({ options }) => {
@@ -96,6 +98,7 @@ export const ActionsButton: FC<{ options: ActionsButtonOption[] }> = ({ options 
                   {options.map((option, index) => (
                     <MenuItem
                       key={option.label}
+                      disabled={option.enabled === false || (typeof option.enabled === 'function' && !option.enabled())}
                       selected={index === selectedIndex}
                       onClick={(event) => handleMenuItemClick(event, index)}
                     >
@@ -113,6 +116,7 @@ export const ActionsButton: FC<{ options: ActionsButtonOption[] }> = ({ options 
 }
 
 export const AgentView = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
   const { t } = useTranslation();
   const { agentId } = useParams<{ agentId: string }>();
@@ -133,6 +137,9 @@ export const AgentView = () => {
   }, [agent]);
   useEffect(() => {
     if (websocketService) {
+      websocketService.on('webrtc-token', (token: string) => {
+        enqueueSnackbar('WebRTC token for this agent has been received. Click to navigate', { variant: 'success', onClick: () => navigate(`/agents/${agentId}/webrtc`, { state: { token } }) });
+      });
       websocketService.on('agent connection', (agentConnection: AgentConnection) => {
         const foundAgent = _.find(agents, { agentId: agentConnection.agentId });
         if (foundAgent) dispatch(UPDATE_AGENT({ ...foundAgent, connected: agentConnection.connected }));
@@ -151,6 +158,7 @@ export const AgentView = () => {
       });
     }
     return () => {
+      websocketService && websocketService.off('webrtc-token');
       websocketService && websocketService.off('agent connection');
       websocketService && websocketService.off('cmd received');
       websocketService && websocketService.off('result');
@@ -170,11 +178,29 @@ export const AgentView = () => {
         }
       },
     },
+    {
+      label: 'Command a WebRtc session',
+      action: () => {
+        if (websocketService) {
+          websocketService.emit('cmd', {
+            cmd: 'init-webrtc-device',
+            agentId,
+          });
+          agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
+        }
+      },
+      enabled: () => agent && agent.connected || false,
+    }
   ];
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 50 },
     { field: "cmdId", headerName: "Command ID", flex: 1 },
-    { field: "cmd", headerName: "Command", flex: 1 },
+    {
+      field: "cmd", headerName: "Command", flex: 1, renderCell: ({ value }) => {
+        if (value === 'init-webrtc-device') return <Button sx={{ textDecoration: 'underline' }} color='inherit' size='small' onClick={() => navigate(`/agents/${agentId}/webrtc`)}>{value}</Button>;
+        return value;
+      }
+    },
     { field: "cmdAt", headerName: "Command At", width: 225, renderCell: ({ value }) => moment(value).format('MMMM Do YYYY, h:mm:ss a'), type: 'date' },
     {
       field: "received", headerName: "Received", width: 100, renderCell: ({ value, id }) => {

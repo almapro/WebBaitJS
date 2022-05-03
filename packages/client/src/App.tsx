@@ -8,9 +8,10 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { i18n } from './locales';
 import { RTL } from './rtl';
 import { AuthRoute, MyAppBar, RestrictedRoute } from './components';
-import { AgentsView, AgentView, DashboardView, LoginView, TestAgentView } from "./views";
+import { AgentsView, AgentView, AgentWebRtcView, DashboardView, LoginView, TestAgentView } from "./views";
 import { useDispatch } from 'react-redux';
 import { CHECK_LOGGED_ACTION } from './redux';
+import { SnackbarProvider } from "notistack";
 
 export type AppContextType = {
   mode: 'light' | 'dark';
@@ -65,26 +66,31 @@ function App() {
       <RTL>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Router>
-            <MyAppBar />
-            <Routes>
-              <Route path='/' element={
-                <RestrictedRoute><DashboardView /></RestrictedRoute>
-              } />
-              <Route path='/agents' element={
-                <RestrictedRoute><AgentsView /></RestrictedRoute>
-              } />
-              <Route path='/agents/:agentId' element={
-                <RestrictedRoute><AgentView /></RestrictedRoute>
-              } />
-              <Route path='/test-agent' element={
-                <RestrictedRoute><TestAgentView /></RestrictedRoute>
-              } />
-              <Route path='/login' element={
-                <AuthRoute><LoginView /></AuthRoute>
-              } />
-            </Routes>
-          </Router>
+          <SnackbarProvider>
+            <Router>
+              <MyAppBar />
+              <Routes>
+                <Route path='/' element={
+                  <RestrictedRoute><DashboardView /></RestrictedRoute>
+                } />
+                <Route path='/agents' element={
+                  <RestrictedRoute><AgentsView /></RestrictedRoute>
+                } />
+                <Route path='/agents/:agentId' element={
+                  <RestrictedRoute><AgentView /></RestrictedRoute>
+                } />
+                <Route path='/agents/:agentId/webrtc' element={
+                  <RestrictedRoute><AgentWebRtcView /></RestrictedRoute>
+                } />
+                <Route path='/test-agent' element={
+                  <RestrictedRoute><TestAgentView /></RestrictedRoute>
+                } />
+                <Route path='/login' element={
+                  <AuthRoute><LoginView /></AuthRoute>
+                } />
+              </Routes>
+            </Router>
+          </SnackbarProvider>
         </ThemeProvider>
       </RTL>
     </AppContext.Provider>
