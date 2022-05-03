@@ -174,7 +174,7 @@ importers:
       '@loopback/authorization': ^0.11.1
       '@loopback/boot': ^4.1.1
       '@loopback/context': ^4.1.2
-      '@loopback/core': ^3.1.1
+      '@loopback/core': ^3.1.2
       '@loopback/http-server': ^3.1.2
       '@loopback/repository': ^4.1.1
       '@loopback/rest': ^11.1.1
@@ -187,7 +187,6 @@ importers:
       '@types/lodash': ^4.14.182
       '@types/node': ^12.20.46
       '@types/uuid': ^8.3.4
-      amqplib: ^0.8.0
       bcryptjs: ^2.4.3
       concurrently: ^7.0.0
       cross-env: ^7.0.3
@@ -219,7 +218,6 @@ importers:
       '@types/bcryptjs': 2.4.2
       '@types/lodash': 4.14.182
       '@types/uuid': 8.3.4
-      amqplib: 0.8.0
       bcryptjs: 2.4.3
       lodash: 4.17.21
       loopback-connector-mysql: 5.4.4
@@ -6169,18 +6167,6 @@ packages:
     resolution: {integrity: sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=}
     dev: false
 
-  /amqplib/0.8.0:
-    resolution: {integrity: sha512-icU+a4kkq4Y1PS4NNi+YPDMwdlbFcZ1EZTQT2nigW3fvOb6AOgUQ9+Mk4ue0Zu5cBg/XpDzB40oH10ysrk2dmA==}
-    engines: {node: '>=10'}
-    dependencies:
-      bitsyntax: 0.1.0
-      bluebird: 3.7.2
-      buffer-more-ints: 1.0.0
-      readable-stream: 1.1.14
-      safe-buffer: 5.2.1
-      url-parse: 1.5.10
-    dev: false
-
   /ansi-align/3.0.1:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}
     dependencies:
@@ -7109,15 +7095,6 @@ packages:
     dev: false
     optional: true
 
-  /bitsyntax/0.1.0:
-    resolution: {integrity: sha512-ikAdCnrloKmFOugAfxWws89/fPc+nw0OOG1IzIE72uSOg/A3cYptKCjSUhDTuj7fhsJtzkzlv7l3b8PzRHLN0Q==}
-    engines: {node: '>=0.8'}
-    dependencies:
-      buffer-more-ints: 1.0.0
-      debug: 2.6.9
-      safe-buffer: 5.1.2
-    dev: false
-
   /bl/2.2.1:
     resolution: {integrity: sha512-6Pesp1w0DEX1N550i/uGV/TqucVL4AM/pgThFSN/Qq9si1/DF9aIHs1BxD8V/QU0HoeHO6cQRTAuYnLPKq1e4g==}
     dependencies:
@@ -7343,10 +7320,6 @@ packages:
 
   /buffer-indexof/1.1.1:
     resolution: {integrity: sha512-4/rOEg86jivtPTeOUUT61jJO1Ya1TrR/OkqCSZDyq84WJh3LuuiphBYJN+fm5xufIk4XAFcEwte/8WzC8If/1g==}
-    dev: false
-
-  /buffer-more-ints/1.0.0:
-    resolution: {integrity: sha512-EMetuGFz5SLsT0QTnXzINh4Ksr+oo4i+UGTXEshiGCQWnsgSs7ZhJ8fzlwQ+OzEMs0MpDAMr1hxnblp5a4vcHg==}
     dev: false
 
   /buffer-xor/1.0.3:
@@ -12636,6 +12609,7 @@ packages:
 
   /isarray/0.0.1:
     resolution: {integrity: sha1-ihis/Kmo9Bd+Cav8YDiTmwXR7t8=}
+    dev: true
 
   /isarray/1.0.0:
     resolution: {integrity: sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=}
@@ -18610,15 +18584,6 @@ packages:
       mute-stream: 0.0.8
     dev: true
 
-  /readable-stream/1.1.14:
-    resolution: {integrity: sha1-fPTFTvZI44EwhMY23SB54WbAgdk=}
-    dependencies:
-      core-util-is: 1.0.3
-      inherits: 2.0.4
-      isarray: 0.0.1
-      string_decoder: 0.10.31
-    dev: false
-
   /readable-stream/2.3.7:
     resolution: {integrity: sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==}
     dependencies:
@@ -20202,10 +20167,6 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4
-
-  /string_decoder/0.10.31:
-    resolution: {integrity: sha1-YuIDvEF2bGwoyfyEMB2rHFMQ+pQ=}
-    dev: false
 
   /string_decoder/1.1.1:
     resolution: {integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==}
