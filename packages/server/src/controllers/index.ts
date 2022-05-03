@@ -6,3 +6,4 @@ export * from './agent.controller';
 export * from './agents-websocket.controller';
 export * from './admins-websocket.controller';
 export * from './agent-agent-command.controller';
+export * from './webrtc-websocket.controller';

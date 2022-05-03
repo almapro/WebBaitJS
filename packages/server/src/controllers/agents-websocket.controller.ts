@@ -4,13 +4,15 @@ import _ from 'lodash';
 import { Subject } from 'rxjs';
 import { Socket } from 'socket.io';
 import { ws } from '../decorators';
+import { MediasoupBindings, MediasoupJWT } from '../mediasoup';
 import { AgentActivity } from '../models';
-import { AgentRepository, AgentWebSocketTokenRepository } from '../repositories';
+import { AgentCommandRepository, AgentRepository, AgentWebSocketTokenRepository } from '../repositories';
 import { AgentCommand, AgentConnection } from './admins-websocket.controller';
 
 export type AgentCmdReceived = {
   cmdId: string;
   receivedAt?: Date;
+  data?: any;
 }
 
 export type AgentCommandResult = {
@@ -18,6 +20,7 @@ export type AgentCommandResult = {
   cmdId: string;
   result: string;
   executedAt?: string;
+  data?: any;
 }
 
 @ws('/agents/ws')
@@ -27,6 +30,8 @@ export class AgentsWebSocketController {
     private socket: Socket,
     @repository(AgentRepository)
     private agentRepository: AgentRepository,
+    @repository(AgentCommandRepository)
+    private agentCommandRepository: AgentCommandRepository,
     @repository(AgentWebSocketTokenRepository)
     private agentWebSocketTokenRepository: AgentWebSocketTokenRepository,
     @inject('rxjs.agent-connection')
@@ -37,6 +42,8 @@ export class AgentsWebSocketController {
     private agentCommandReceived: Subject<AgentCmdReceived>,
     @inject('rxjs.agent-command-results')
     private agentCommandResults: Subject<AgentCommandResult>,
+    @inject(MediasoupBindings.jwt)
+    private mediasoupJwt: MediasoupJWT,
   ) { }
 
   /**
@@ -77,11 +84,13 @@ export class AgentsWebSocketController {
           if (mac) activity.mac = mac;
           await this.agentRepository.activities(foundAgent.id).create(activity);
           const cmds = await this.agentRepository.cmds(foundAgent.id).find({ include: [{ relation: 'result' }] });
-          cmds.forEach(cmd => {
+          cmds.forEach(async cmd => {
             if (!cmd.received || !cmd.result) {
+              const token = await this.mediasoupJwt.generateToken({ roomId: foundAgent.agentId, peerId: foundAgent.agentId, admin: false });
               socket.emit('cmd', {
                 cmdId: cmd.cmdId,
                 cmd: cmd.cmd,
+                data: { token: cmd.cmd === 'init-webrtc-device' ? token : undefined, },
               });
             }
           });
@@ -92,7 +101,7 @@ export class AgentsWebSocketController {
           });
         }
       } else {
-        socket.emit('error', `Invalid token: ${token}`);
+        socket.emit('error', `Invalid token`);
         socket.disconnect();
       }
     } else {
@@ -116,9 +125,17 @@ export class AgentsWebSocketController {
    * @param result
    */
   @ws.subscribe('result')
-  handleResult(result: AgentCommandResult) {
+  async handleResult(result: AgentCommandResult) {
     console.log('result: %s', result);
     this.agentCommandResults.next(result);
+    const cmd = await this.agentCommandRepository.findOne({ where: { cmdId: result.cmdId } });
+    if (cmd) {
+      switch (cmd.cmd) {
+        case 'init-webrtc-device':
+          this.socket.emit(`result-ack:${result.cmdId}`);
+          break;
+      }
+    }
   }
 
   /**

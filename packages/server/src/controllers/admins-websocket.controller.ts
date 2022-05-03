@@ -13,11 +13,13 @@ import { v4 } from 'uuid';
 import { AgentCmdReceived, AgentCommandResult } from './agents-websocket.controller';
 import { HttpErrors } from '@loopback/rest';
 import { Subject } from 'rxjs';
+import { MediasoupBindings, MediasoupJWT } from '../mediasoup';
 
 export type AgentCommand = {
   agentId: string;
   cmd: string;
   cmdId?: string;
+  data?: any;
 }
 
 export type AgentConnection = {
@@ -48,6 +50,8 @@ export class AdminsWebSocketController {
     private agentCommandReceived: Subject<AgentCmdReceived>,
     @inject('rxjs.agent-command-results')
     private agentCommandResults: Subject<AgentCommandResult>,
+    @inject(MediasoupBindings.jwt)
+    private mediasoupJwt: MediasoupJWT,
   ) { }
 
   /**
@@ -103,6 +107,11 @@ export class AdminsWebSocketController {
     if (agent) {
       const cmdId = v4();
       await this.agentRepository.cmds(+`${agent.id}`).create({ cmd: cmd.cmd, cmdId, cmdAt: new Date().toISOString() });
+      if (cmd.cmd === 'init-webrtc-device') {
+        cmd.data = { token: this.mediasoupJwt.generateToken({ roomId: cmd.agentId, peerId: cmd.agentId, admin: false }) };
+        const webRtctoken = this.mediasoupJwt.generateToken({ roomId: cmd.agentId, admin: true });
+        this.socket.emit('webrtc-token', webRtctoken);
+      }
       this.agentCommands.next({ ...cmd, cmdId })
     }
   }
@@ -147,6 +156,11 @@ export class AdminsWebSocketController {
     if (agentConnection.connected) agentsConnected.push(agentConnection.agentId);
     else agentsConnected = agentsConnected.filter(agentId => agentId !== agentConnection.agentId);
     this.socket.emit('agent connection', agentConnection);
+  }
+
+  @ws.subscribe('RequestWebRtcSessionToken')
+  async handleRequestWebRtcSessionToken(agentId: string) {
+    this.socket.emit('webrtc-token', await this.mediasoupJwt.generateToken({ roomId: agentId, admin: true }));
   }
 
   /**

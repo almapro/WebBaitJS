@@ -62,7 +62,7 @@ export class WebBaitServer extends BootMixin(
     this.dataSource(DbDataSource, UserServiceBindings.DATASOURCE_NAME);
     this.bind(UserServiceBindings.USER_SERVICE.toString()).toClass(UserAuthenticationService);
     this.bind(PasswordHasherBindings.SERVICE).toClass(PasswordHasherService);
-    this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JwtService);
+    this.bind(TokenServiceBindings.TOKEN_SERVICE.key).toClass(JwtService);
     // Authorization
     const authorizationOptions: AuthorizationOptions = {
       precedence: AuthorizationDecision.DENY,

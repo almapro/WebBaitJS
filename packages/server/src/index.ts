@@ -1,5 +1,8 @@
+import { TokenServiceBindings } from '@loopback/authentication-jwt';
+import { Subject } from 'rxjs';
 import { ApplicationConfig, WebBaitServer } from './application';
-import { AdminsWebSocketController, AgentsWebSocketController } from './controllers';
+import { AdminsWebSocketController, AgentsWebSocketController, WebRtcWebSocketController } from './controllers';
+import { MediasoupBindings, MediasoupConsumers, MediasoupJWT, MediasoupPeers, MediasoupRooms, MediasoupSubjects, MediasoupWebRtcTransport, MediasoupWorkers } from './mediasoup';
 import { WebSocketServer } from './websocket.server';
 
 export * from './application';
@@ -17,8 +20,8 @@ export async function main(options: ApplicationConfig = {}) {
       next();
     });
     // Add a route
-    const ns = app.wsServer.route(AgentsWebSocketController, '/agents/ws');
-    ns.use((socket, next) => {
+    const agents_ns = app.wsServer.route(AgentsWebSocketController, '/agents/ws');
+    agents_ns.use((socket, next) => {
       console.log(
         'Middleware for namespace %s - socket: %s',
         socket.nsp.name,
@@ -26,8 +29,17 @@ export async function main(options: ApplicationConfig = {}) {
       );
       next();
     });
-    const ans = app.wsServer.route(AdminsWebSocketController, '/admins');
-    ans.use((socket, next) => {
+    const admins_ns = app.wsServer.route(AdminsWebSocketController, '/admins');
+    admins_ns.use((socket, next) => {
+      console.log(
+        'Middleware for namespace %s - socket: %s',
+        socket.nsp.name,
+        socket.id,
+      );
+      next();
+    });
+    const webrtc_ns = app.wsServer.route(WebRtcWebSocketController, '/webrtc');
+    webrtc_ns.use((socket, next) => {
       console.log(
         'Middleware for namespace %s - socket: %s',
         socket.nsp.name,
@@ -41,7 +53,13 @@ export async function main(options: ApplicationConfig = {}) {
   const url = app.restServer.url;
   console.log(`Server is running at ${url}`);
   console.log(`Try ${url}/ping`);
-
+  app.bind(MediasoupBindings.workers).to(new MediasoupWorkers());
+  app.bind(MediasoupBindings.rooms).to(new MediasoupRooms());
+  app.bind(MediasoupBindings.peers).to(new MediasoupPeers());
+  app.bind(MediasoupBindings.consumers).to(new MediasoupConsumers());
+  app.bind(MediasoupBindings.webRtcTransport).to(new MediasoupWebRtcTransport());
+  app.bind(MediasoupBindings.jwt).to(new MediasoupJWT(await app.get(TokenServiceBindings.TOKEN_SECRET), await app.get(TokenServiceBindings.TOKEN_EXPIRES_IN)));
+  app.bind(MediasoupBindings.subject).to(new Subject<MediasoupSubjects>());
   return app;
 }
 

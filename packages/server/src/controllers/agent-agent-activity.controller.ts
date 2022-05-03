@@ -103,7 +103,7 @@ export class AgentAgentActivityController {
     const agentId = agentIdHeader ? agentIdHeader.toString() : '';
     const foundAgent = await this.agentRepository.findOne({ where: { agentId } });
     if (!foundAgent) {
-      throw new HttpErrors.Unauthorized(`Agent not found`);
+      throw new HttpErrors.Unauthorized('Agent not found');
     }
     await this.agentRepository.activities(foundAgent.id).create({ ...agentActivity, ip: this.request.ip, userAgent: this.request.headers['user-agent'], type: 'request-token' });
     const foundUnexpiredTokens = await this.agentRepository.tokens(foundAgent.id).find({ where: { expiresAt: { gt: new Date().toISOString() } } });
