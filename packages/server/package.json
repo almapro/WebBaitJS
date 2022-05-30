@@ -21,6 +21,7 @@
     "prestart": "npm run rebuild",
     "start": "cross-env PORT=3001 node -r source-map-support/register .",
     "dev": "cross-env PORT=3001 concurrently -i 'nodemon -r source-map-support/register . ' 'npm run build:watch'",
+    "dev:network": "cross-env PORT=3001 MEDIASOUP_LISTEN_IP=\"$IP\" concurrently -i 'nodemon -r source-map-support/register . ' 'npm run build:watch'",
     "prepare": "npm run build",
     "rebuild": "npm run clean && npm run build"
   },
