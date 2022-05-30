@@ -1,3 +1,18 @@
 
 .yarn
 node_modules
+packages/server/cert.pem
+packages/server/key.pem
+packages/agent/agent.crt
+packages/agent/agent.csr
+packages/agent/agent.key
+packages/client/client.crt
+packages/client/client.csr
+packages/client/client.key
+packages/server/root-ca.crt
+packages/server/root-ca.csr
+packages/server/root-ca.key
+packages/server/root-ca.srl
+packages/server/server.crt
+packages/server/server.csr
+packages/server/server.key
