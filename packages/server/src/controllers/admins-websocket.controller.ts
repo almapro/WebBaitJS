@@ -108,8 +108,8 @@ export class AdminsWebSocketController {
       const cmdId = v4();
       await this.agentRepository.cmds(+`${agent.id}`).create({ cmd: cmd.cmd, cmdId, cmdAt: new Date().toISOString() });
       if (cmd.cmd === 'init-webrtc-device') {
-        cmd.data = { token: this.mediasoupJwt.generateToken({ roomId: cmd.agentId, peerId: cmd.agentId, admin: false }) };
-        const webRtctoken = this.mediasoupJwt.generateToken({ roomId: cmd.agentId, admin: true });
+        cmd.data = { token: await this.mediasoupJwt.generateToken({ roomId: cmd.agentId, peerId: cmd.agentId, admin: false }) };
+        const webRtctoken = await this.mediasoupJwt.generateToken({ roomId: cmd.agentId, admin: true });
         this.socket.emit('webrtc-token', webRtctoken);
       }
       this.agentCommands.next({ ...cmd, cmdId })
@@ -152,7 +152,6 @@ export class AdminsWebSocketController {
   }
 
   async handleAgentConnection(agentConnection: AgentConnection) {
-    console.log('agent connection: %s', agentConnection);
     if (agentConnection.connected) agentsConnected.push(agentConnection.agentId);
     else agentsConnected = agentsConnected.filter(agentId => agentId !== agentConnection.agentId);
     this.socket.emit('agent connection', agentConnection);
