@@ -1,11 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import { App } from './App';
 import reportWebVitals from './reportWebVitals';
 
+const element = document.getElementById('root') || document.createElement('div');
+element.id = 'root';
+if (!document.contains(element)) {
+  document.body.appendChild(element);
+}
+
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  element,
 );
 root.render(
   <React.StrictMode>
