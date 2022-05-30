@@ -27,12 +27,12 @@ import { useAppContext } from '../App';
 import _ from "lodash";
 
 export const MyAppBar: FC = () => {
-  const location = useLocation();
-  if (location.pathname === '/login') return null;
   const { t, i18n } = useTranslation();
   const [showDrawer, setShowDrawer] = useState(false);
   const { mode, setMode } = useAppContext();
   const navigate = useNavigate();
+  const location = useLocation();
+  if (location.pathname === '/login') return null;
   const navs: { [key: string]: [string, string, JSX.Element] } = {
     '/': [t('titles.dashboard'), t('descriptions.dashboard'), <DashboardIcon />],
     '/agents': [t('titles.agents'), t('descriptions.agents'), <WebhookIcon />],
