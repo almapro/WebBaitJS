@@ -35,30 +35,38 @@ export type MediasoupSubjects = {
   type: 'enableMic'
   id: string
   deviceId: string
+  callback: (error?: string) => void
 } | {
   type: 'disableMic'
   id: string
+  callback: (error?: string) => void
 } | {
   type: 'changeMic'
   id: string
   deviceId: string
+  callback: (error?: string) => void
 } | {
   type: 'enableWebcam'
   id: string
   deviceId: string
+  callback: (error?: string) => void
 } | {
   type: 'disableWebcam'
   id: string
+  callback: (error?: string) => void
 } | {
   type: 'changeWebcam'
   id: string
   deviceId: string
+  callback: (error?: string) => void
 } | {
   type: 'startScreenShare'
   id: string
+  callback: (error?: string) => void
 } | {
   type: 'stopScreenShare'
   id: string
+  callback: (error?: string) => void
 }
 
 export const MediasoupBindings = {
