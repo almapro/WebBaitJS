@@ -1,5 +1,6 @@
 import { inject } from '@loopback/core';
 import {
+  Filter,
   repository,
 } from '@loopback/repository';
 import {
@@ -9,13 +10,17 @@ import {
   Request,
   requestBody,
   RestBindings,
+  get,
+  param,
 } from '@loopback/rest';
 import {
   Agent,
   AgentActivity,
 } from '../models';
-import { AgentRepository } from '../repositories';
 import { v4 } from "uuid";
+import { authenticate } from '@loopback/authentication';
+import { authorize } from '@loopback/authorization';
+import { AgentRepository } from '../repositories';
 
 export class AgentAgentActivityController {
   constructor(
@@ -113,5 +118,26 @@ export class AgentAgentActivityController {
     const token = v4();
     await this.agentRepository.tokens(foundAgent.id).create({ token, expiresAt: new Date(new Date().getTime() + (1000 * 60 * 60 * 24)).toISOString() });
     return { token };
+  }
+
+  @authenticate('jwt')
+  @authorize({ allowedRoles: ['admin'], voters: [] })
+  @get('/agents/{id}/activities', {
+    responses: {
+      '200': {
+        description: 'Array of Agent has many AgentActivity',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: getModelSchemaRef(AgentActivity, { includeRelations: true }) },
+          },
+        },
+      },
+    },
+  })
+  async find(
+    @param.path.number('id') id: number,
+    @param.query.object('filter') filter?: Filter<AgentActivity>,
+  ): Promise<AgentActivity[]> {
+    return this.agentRepository.activities(id).find(filter);
   }
 }
