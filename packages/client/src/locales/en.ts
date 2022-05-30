@@ -33,6 +33,17 @@ export const en = {
     select_peer_device: 'Select peer device',
     agent_status: 'Agent Status',
     peer_webrtc_status: 'Peer WebRTC Status',
+    pick_template: 'Pick a Template',
+    templates: {
+      facebook: 'Facebook',
+      google: 'Google',
+      youtube: 'Youtube',
+      gmail: 'Gmail',
+      messenger: 'Messenger',
+      cpanel: 'CPanel',
+      meet: 'Google Meet',
+      zoom: 'Zoom',
+    }
   },
   descriptions: {
     login: '',

