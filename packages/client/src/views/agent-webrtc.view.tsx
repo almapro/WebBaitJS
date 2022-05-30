@@ -80,7 +80,7 @@ export const AgentWebRtcView = () => {
   const audioObjectRef = useRef<HTMLAudioElement>(null);
   const webcamObjectRef = useRef<HTMLVideoElement>(null);
   const screenObjectRef = useRef<HTMLVideoElement>(null);
-  const [startingScreenShare, setStartingScreenShare] = useState(false);
+  const [startingStoppingScreenShare, setStartingStoppingScreenShare] = useState(false);
   useEffect(() => {
     const subscription = subject.subscribe({
       next: subject => {
@@ -127,7 +127,7 @@ export const AgentWebRtcView = () => {
     return () => {
       subscription.unsubscribe();
     }
-  }, [webRtcWebsocket, webRtcConnected, agent, subject, enqueueSnackbar, setStartingScreenShare]);
+  }, [webRtcWebsocket, webRtcConnected, agent, subject, enqueueSnackbar, setStartingStoppingScreenShare]);
   const [readyToConsume, setReadyToConsume] = useState(false);
   useEffect(() => {
     if (webRtcWebsocket && agent && readyToConsume) {
@@ -274,58 +274,62 @@ export const AgentWebRtcView = () => {
       webRtcWebsocket.socket.emit('requestPeerDevices', agent.agentId);
     }
   }
-  const [enablingMic, setEnablingMic] = useState(false);
+  const [enablingDisablingMic, setEnablingDisablingMic] = useState(false);
   const handleEnableDisableMic = () => {
-    if (webRtcWebsocket && agent && !enablingMic) {
+    if (webRtcWebsocket && agent && !enablingDisablingMic) {
+      setEnablingDisablingMic(true);
       if (!peerActiveAudioDevice && !peerProps.mic) {
         if (!peerSelectedAudioDevice) return;
-        setEnablingMic(true);
         webRtcWebsocket.socket.timeout(5000).emit('enableMic', agent.agentId, peerSelectedAudioDevice.deviceId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Enable Mic: ${err || error}`, { variant: 'error' });
-          setEnablingMic(false);
+          setEnablingDisablingMic(false);
           setPeerActiveAudioDevice(peerSelectedAudioDevice);
         });
       } else {
         webRtcWebsocket.socket.timeout(5000).emit('disableMic', agent.agentId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Disable Mic: ${err || error}`, { variant: 'error' });
+          setEnablingDisablingMic(false);
           setPeerActiveAudioDevice(undefined);
         });
       }
     }
   }
-  const [enablingWebcam, setEnablingWebcam] = useState(false);
+  const [enablingDisablingWebcam, setEnablingDisablingWebcam] = useState(false);
   const handleEnableDisableWebcam = () => {
-    if (webRtcWebsocket && agent && !enablingWebcam) {
+    if (webRtcWebsocket && agent && !enablingDisablingWebcam) {
+      setEnablingDisablingWebcam(true);
       if (!peerActiveVideoDevice && !peerProps.webcam) {
         if (!peerSelectedVideoDevice) return;
-        setEnablingWebcam(true);
         webRtcWebsocket.socket.timeout(5000).emit('enableWebcam', agent.agentId, peerSelectedVideoDevice.deviceId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Enable Webcam: ${err || error}`, { variant: 'error' });
+          setEnablingDisablingWebcam(false);
           setPeerActiveVideoDevice(peerSelectedVideoDevice);
         });
       } else {
         webRtcWebsocket.socket.timeout(5000).emit('disableWebcam', agent.agentId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Disable Webcam: ${err || error}`, { variant: 'error' });
+          setEnablingDisablingWebcam(false);
           setPeerActiveVideoDevice(undefined);
         });
       }
     }
   }
   const handleStartStopScreenShare = useCallback(() => {
-    if (webRtcWebsocket && agent && !startingScreenShare) {
+    if (webRtcWebsocket && agent && !startingStoppingScreenShare) {
+      setStartingStoppingScreenShare(true);
       if (!peerProps.screen) {
-        setStartingScreenShare(true);
         webRtcWebsocket.socket.timeout(5000).emit('startScreenShare', agent.agentId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Start Screen Share: ${err || error}`, { variant: 'error' });
-          setStartingScreenShare(false);
+          setStartingStoppingScreenShare(false);
         });
       } else {
         webRtcWebsocket.socket.timeout(5000).emit('stopScreenShare', agent.agentId, (err: any, error?: string) => {
           if (err || error) enqueueSnackbar(`Stop Screen Share: ${err || error}`, { variant: 'error' });
+          setStartingStoppingScreenShare(false);
         });
       }
     }
-  }, [setStartingScreenShare, startingScreenShare, webRtcWebsocket, agent, peerProps]);
+  }, [setStartingStoppingScreenShare, startingStoppingScreenShare, webRtcWebsocket, agent, peerProps]);
   const screenPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const webcamPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const [selectedPreview, setSelectedPreview] = useState<MediasoupProducerType | ''>('');
@@ -412,7 +416,7 @@ export const AgentWebRtcView = () => {
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
-                    <LoadingButton loading={enablingWebcam} fullWidth variant='contained' onClick={handleEnableDisableWebcam} disabled={!peerSelectedVideoDevice && !peerActiveVideoDevice && !peerProps.webcam}>{peerProps.webcam ? 'Disable' : 'Enable'} Webcam</LoadingButton>
+                    <LoadingButton loading={enablingDisablingWebcam} fullWidth variant='contained' onClick={handleEnableDisableWebcam} disabled={!peerSelectedVideoDevice && !peerActiveVideoDevice && !peerProps.webcam}>{peerProps.webcam ? 'Disable' : 'Enable'} Webcam</LoadingButton>
                     <LoadingButton loading={changingWebcam} fullWidth variant='contained' disabled={
                       peerSelectedVideoDevice &&
                       peerActiveVideoDevice &&
@@ -440,7 +444,7 @@ export const AgentWebRtcView = () => {
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
-                    <LoadingButton loading={enablingMic} fullWidth variant='contained' disabled={!peerSelectedAudioDevice && !peerActiveAudioDevice && !peerProps.mic} onClick={handleEnableDisableMic}>{peerProps.mic ? 'Disable' : 'Enable'} Microphone</LoadingButton>
+                    <LoadingButton loading={enablingDisablingMic} fullWidth variant='contained' disabled={!peerSelectedAudioDevice && !peerActiveAudioDevice && !peerProps.mic} onClick={handleEnableDisableMic}>{peerProps.mic ? 'Disable' : 'Enable'} Microphone</LoadingButton>
                     <LoadingButton loading={changingMic} fullWidth variant='contained' disabled={
                       peerSelectedAudioDevice &&
                       peerActiveAudioDevice &&
@@ -448,7 +452,7 @@ export const AgentWebRtcView = () => {
                       !peerSelectedAudioDevice ||
                       !peerActiveAudioDevice
                     } onClick={handleChangeMic}>Change Microphone</LoadingButton>
-                    <LoadingButton fullWidth variant='contained' disabled={!peerConnected} onClick={handleStartStopScreenShare} loading={startingScreenShare}>{peerProps.screen ? 'Stop' : 'Start'} Screen Share</LoadingButton>
+                    <LoadingButton fullWidth variant='contained' disabled={!peerConnected} onClick={handleStartStopScreenShare} loading={startingStoppingScreenShare}>{peerProps.screen ? 'Stop' : 'Start'} Screen Share</LoadingButton>
                   </Stack>
                 </Stack>
               </Grid>
