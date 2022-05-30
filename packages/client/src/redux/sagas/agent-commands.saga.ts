@@ -1,5 +1,4 @@
 import { put, all, takeLatest, delay, race, call } from 'redux-saga/effects';
-import _ from 'lodash';
 import { createAction } from '@reduxjs/toolkit';
 import { AgentCommands } from '../../models';
 import { ADD_AGENT_COMMAND, SET_AGENT_COMMANDS, SET_FETCHING, SET_SUBMITTING, UPDATE_AGENT_COMMAND } from '../slicers';

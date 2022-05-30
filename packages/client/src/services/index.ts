@@ -5,3 +5,4 @@ export * from './statistics.service';
 export * from './agents.service';
 export * from './agent-commands.service';
 export * from './websocket.service';
+export * from './agent-activities.service';

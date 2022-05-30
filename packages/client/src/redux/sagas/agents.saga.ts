@@ -1,8 +1,7 @@
 import { put, all, takeLatest, delay, race, call } from 'redux-saga/effects';
-import _ from 'lodash';
 import { createAction } from '@reduxjs/toolkit';
-import { Agents } from '../../models';
-import { SET_AGENTS, SET_FETCHING } from '../slicers';
+import { AgentActivities, Agents } from '../../models';
+import { SET_AGENTS, SET_AGENT_ACTIVITIES, SET_FETCHING } from '../slicers';
 import { agentsService } from '../../services';
 import { AxiosResponse } from 'axios';
 import { TOGGLE_ACTION_ERROR_ACTION } from './app.saga';
@@ -26,7 +25,12 @@ export function* fetchAgentsSaga(action: ReturnType<typeof FETCH_AGENTS_ACTION>)
       timeout: delay(5000)
     });
     if (result) {
-      yield put(SET_AGENTS(result.data.map(agent => ({ ...agent, connected: false }))));
+      const activities: AgentActivities[] = [];
+      yield put(SET_AGENTS(result.data.map(agent => {
+        if (agent.activities) activities.push(...agent.activities);
+        return { ...agent, connected: false }
+      })));
+      yield put(SET_AGENT_ACTIVITIES(activities));
     } else {
       yield put(TOGGLE_ACTION_ERROR_ACTION('actions.agents.errors.timeout'));
     }
