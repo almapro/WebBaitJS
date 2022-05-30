@@ -7,7 +7,9 @@ import { MediasoupWorkers } from "./workers.mediasoup";
 
 export type MediasoupPeerProps = {
   mic: boolean
+  micDeviceId: string
   webcam: boolean
+  webcamDeviceId: string
   screen: boolean
 }
 

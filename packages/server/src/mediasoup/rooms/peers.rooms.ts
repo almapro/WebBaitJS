@@ -21,6 +21,8 @@ export type MediasoupPeer = {
   transports: Map<MediasoupTransportType, WebRtcTransport>;
   producers: Map<MediasoupProducerType, Producer>;
   consumers: Map<string, MediasoupConsumer>;
+  micDeviceId: string
+  webcamDeviceId: string
 }
 
 export class MediasoupPeers {
@@ -29,13 +31,15 @@ export class MediasoupPeers {
   getRoomPeers = (room: MediasoupRoom) => room.peers;
 
   createRoomPeer = (room: MediasoupRoom, peerId: string, rtpCapabilities: RtpCapabilities) => {
-    const peer = {
+    const peer: MediasoupPeer = {
       id: peerId,
       rtpCapabilities,
       transports: new Map<MediasoupTransportType, WebRtcTransport>(),
       producers: new Map<MediasoupProducerType, Producer>(),
       consumers: new Map<string, MediasoupConsumer>(),
-      mediaDevices: []
+      mediaDevices: [],
+      micDeviceId: '',
+      webcamDeviceId: '',
     }
     room.peers.set(peerId, peer);
     return peer;
