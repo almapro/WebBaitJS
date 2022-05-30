@@ -4,6 +4,7 @@ import { ApplicationConfig, WebBaitServer } from './application';
 import { AdminsWebSocketController, AgentsWebSocketController, WebRtcWebSocketController } from './controllers';
 import { MediasoupBindings, MediasoupConsumers, MediasoupJWT, MediasoupPeers, MediasoupRooms, MediasoupSubjects, MediasoupWebRtcTransport, MediasoupWorkers } from './mediasoup';
 import { WebSocketServer } from './websocket.server';
+import fs from 'fs';
 
 export * from './application';
 
@@ -65,7 +66,7 @@ export async function main(options: ApplicationConfig = {}) {
 
 if (require.main === module) {
   // Run the application
-  const config = {
+  const config: ApplicationConfig = {
     rest: {
       port: +(process.env.PORT ?? 3000),
       host: process.env.HOST,
@@ -79,6 +80,9 @@ if (require.main === module) {
         // useful when used with OpenAPI-to-GraphQL to locate your application
         setServersFromRequest: true,
       },
+      protocol: 'https',
+      key: fs.readFileSync('./server.key'),
+      cert: fs.readFileSync('./server.crt'),
     },
   };
   main(config).catch(err => {
