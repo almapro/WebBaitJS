@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   ButtonGroup,
   FormControl,
@@ -14,7 +15,7 @@ import {
   useTheme,
 } from '@mui/material';
 import _ from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -30,9 +31,11 @@ import { Device } from 'mediasoup-client';
 import { Subject } from 'rxjs';
 import Hark from 'hark';
 import { useWindowSize } from "react-use";
-import { makeStyles } from '@mui/styles';
+import { useSnackbar } from 'notistack';
+import { LoadingButton } from '@mui/lab';
 
 export const AgentWebRtcView = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
   let stateToken = ''
   const locationState = location.state as { token?: string } | null;
@@ -40,39 +43,6 @@ export const AgentWebRtcView = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { width, height } = useWindowSize();
-  const useStyles = makeStyles({
-    videoViewer: {
-      height: height - Number(theme.spacing(35).replace('px', '')) - (theme.mixins.toolbar.minHeight ? Number(theme.mixins.toolbar.minHeight.toString().replace('px', '')) : 54),
-      width: width - Number(theme.spacing(10).replace('px', '')) - 300,
-    },
-    thumbnail: {
-      height: 175,
-      with: 300,
-      '&:hover': {
-        cursor: 'pointer',
-        border: '2px solid #ccc',
-      },
-      '&[data-selected="true"]': {
-        cursor: 'pointer',
-        border: `2px solid ${theme.palette.primary.main}`,
-      },
-    },
-    micVolumeContainer: {
-      height: '100%',
-      width: '100%',
-      position: 'relative',
-      '& > *': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        margin: 'auto',
-        width: '90%',
-      }
-    }
-  });
-  const classes = useStyles();
   const { agentId } = useParams<{ agentId: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -110,6 +80,7 @@ export const AgentWebRtcView = () => {
   const audioObjectRef = useRef<HTMLAudioElement>(null);
   const webcamObjectRef = useRef<HTMLVideoElement>(null);
   const screenObjectRef = useRef<HTMLVideoElement>(null);
+  const [startingScreenShare, setStartingScreenShare] = useState(false);
   useEffect(() => {
     const subscription = subject.subscribe({
       next: subject => {
@@ -126,7 +97,6 @@ export const AgentWebRtcView = () => {
             setPeerProps(subject.props);
             break;
           case 'peerLeft':
-            console.log('peerLeft', subject.id, agent.agentId);
             if (subject.id !== agent.agentId) return;
             setPeerConnected(false);
             setPeerProps({ mic: false, webcam: false, screen: false });
@@ -147,7 +117,9 @@ export const AgentWebRtcView = () => {
           case 'transportCreated':
             if (subject.transportType === 'RECEIVE') setReadyToConsume(true);
             break;
-          default:
+          case 'webRtcError':
+            if (subject.id !== agentId) return;
+            enqueueSnackbar(subject.msg, { variant: 'error' });
             break;
         }
       }
@@ -155,7 +127,7 @@ export const AgentWebRtcView = () => {
     return () => {
       subscription.unsubscribe();
     }
-  }, [webRtcWebsocket, webRtcConnected, agent, subject]);
+  }, [webRtcWebsocket, webRtcConnected, agent, subject, enqueueSnackbar, setStartingScreenShare]);
   const [readyToConsume, setReadyToConsume] = useState(false);
   useEffect(() => {
     if (webRtcWebsocket && agent && readyToConsume) {
@@ -302,39 +274,58 @@ export const AgentWebRtcView = () => {
       webRtcWebsocket.socket.emit('requestPeerDevices', agent.agentId);
     }
   }
+  const [enablingMic, setEnablingMic] = useState(false);
   const handleEnableDisableMic = () => {
-    if (webRtcWebsocket && agent) {
+    if (webRtcWebsocket && agent && !enablingMic) {
       if (!peerActiveAudioDevice && !peerProps.mic) {
         if (!peerSelectedAudioDevice) return;
-        webRtcWebsocket.socket.emit('enableMic', agent.agentId, peerSelectedAudioDevice.deviceId);
-        setPeerActiveAudioDevice(peerSelectedAudioDevice);
+        setEnablingMic(true);
+        webRtcWebsocket.socket.timeout(5000).emit('enableMic', agent.agentId, peerSelectedAudioDevice.deviceId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Enable Mic: ${err || error}`, { variant: 'error' });
+          setEnablingMic(false);
+          setPeerActiveAudioDevice(peerSelectedAudioDevice);
+        });
       } else {
-        webRtcWebsocket.socket.emit('disableMic', agent.agentId);
-        setPeerActiveAudioDevice(undefined);
+        webRtcWebsocket.socket.timeout(5000).emit('disableMic', agent.agentId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Disable Mic: ${err || error}`, { variant: 'error' });
+          setPeerActiveAudioDevice(undefined);
+        });
       }
     }
   }
+  const [enablingWebcam, setEnablingWebcam] = useState(false);
   const handleEnableDisableWebcam = () => {
-    if (webRtcWebsocket && agent) {
+    if (webRtcWebsocket && agent && !enablingWebcam) {
       if (!peerActiveVideoDevice && !peerProps.webcam) {
         if (!peerSelectedVideoDevice) return;
-        webRtcWebsocket.socket.emit('enableWebcam', agent.agentId, peerSelectedVideoDevice.deviceId);
-        setPeerActiveVideoDevice(peerSelectedVideoDevice);
+        setEnablingWebcam(true);
+        webRtcWebsocket.socket.timeout(5000).emit('enableWebcam', agent.agentId, peerSelectedVideoDevice.deviceId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Enable Webcam: ${err || error}`, { variant: 'error' });
+          setPeerActiveVideoDevice(peerSelectedVideoDevice);
+        });
       } else {
-        webRtcWebsocket.socket.emit('disableWebcam', agent.agentId);
-        setPeerActiveVideoDevice(undefined);
+        webRtcWebsocket.socket.timeout(5000).emit('disableWebcam', agent.agentId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Disable Webcam: ${err || error}`, { variant: 'error' });
+          setPeerActiveVideoDevice(undefined);
+        });
       }
     }
   }
-  const handleStartStopScreenShare = () => {
-    if (webRtcWebsocket && agent) {
+  const handleStartStopScreenShare = useCallback(() => {
+    if (webRtcWebsocket && agent && !startingScreenShare) {
       if (!peerProps.screen) {
-        webRtcWebsocket.socket.emit('startScreenShare', agent.agentId);
+        setStartingScreenShare(true);
+        webRtcWebsocket.socket.timeout(5000).emit('startScreenShare', agent.agentId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Start Screen Share: ${err || error}`, { variant: 'error' });
+          setStartingScreenShare(false);
+        });
       } else {
-        webRtcWebsocket.socket.emit('stopScreenShare', agent.agentId);
+        webRtcWebsocket.socket.timeout(5000).emit('stopScreenShare', agent.agentId, (err: any, error?: string) => {
+          if (err || error) enqueueSnackbar(`Stop Screen Share: ${err || error}`, { variant: 'error' });
+        });
       }
     }
-  }
+  }, [setStartingScreenShare, startingScreenShare, webRtcWebsocket, agent, peerProps]);
   const screenPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const webcamPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const [selectedPreview, setSelectedPreview] = useState<MediasoupProducerType | ''>('');
@@ -355,6 +346,28 @@ export const AgentWebRtcView = () => {
         break;
     }
   }, [selectedPreview]);
+  const [changingMic, setChangingMic] = useState(false);
+  const handleChangeMic = () => {
+    if (webRtcWebsocket && peerSelectedAudioDevice && !changingMic) {
+      setChangingMic(true);
+      webRtcWebsocket.socket.timeout(5000).emit('changeMic', agentId, peerSelectedAudioDevice.deviceId, (err: any, error?: string) => {
+        setChangingMic(false);
+        if (err || error) enqueueSnackbar(`Change Microphone: ${err || error}`, { variant: 'error' });
+        else setPeerActiveAudioDevice(peerSelectedAudioDevice);
+      });
+    }
+  }
+  const [changingWebcam, setChangingWebcam] = useState(false);
+  const handleChangeWebcam = () => {
+    if (webRtcWebsocket && peerSelectedVideoDevice && !changingWebcam) {
+      setChangingWebcam(true);
+      webRtcWebsocket.socket.timeout(5000).emit('changeWebcam', agentId, peerSelectedVideoDevice.deviceId, (err: any, error?: string) => {
+        setChangingWebcam(false);
+        if (err || error) enqueueSnackbar(`Change Webcam: ${err || error}`, { variant: 'error' });
+        else setPeerActiveVideoDevice(peerSelectedVideoDevice);
+      });
+    }
+  }
   return (
     <Paper elevation={3} sx={{ p: 2, m: 2, height: '90vh' }}>
       <Grid container spacing={2} direction='column' sx={{ height: '100%' }}>
@@ -399,14 +412,14 @@ export const AgentWebRtcView = () => {
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
-                    <Button fullWidth variant='contained' onClick={handleEnableDisableWebcam} disabled={!peerSelectedVideoDevice && !peerActiveVideoDevice && !peerProps.webcam}>{peerProps.webcam ? 'Disable' : 'Enable'} Webcam</Button>
-                    <Button fullWidth variant='contained' disabled={
+                    <LoadingButton loading={enablingWebcam} fullWidth variant='contained' onClick={handleEnableDisableWebcam} disabled={!peerSelectedVideoDevice && !peerActiveVideoDevice && !peerProps.webcam}>{peerProps.webcam ? 'Disable' : 'Enable'} Webcam</LoadingButton>
+                    <LoadingButton loading={changingWebcam} fullWidth variant='contained' disabled={
                       peerSelectedVideoDevice &&
                       peerActiveVideoDevice &&
                       peerSelectedVideoDevice.deviceId === peerActiveVideoDevice.deviceId ||
                       !peerSelectedVideoDevice ||
                       !peerActiveVideoDevice
-                    }>Change Webcam</Button>
+                    } onClick={handleChangeWebcam}>Change Webcam</LoadingButton>
                   </Stack>
                 </Stack>
               </Grid>
@@ -427,42 +440,104 @@ export const AgentWebRtcView = () => {
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
-                    <Button fullWidth variant='contained' disabled={!peerSelectedAudioDevice && !peerActiveAudioDevice && !peerProps.mic} onClick={handleEnableDisableMic}>{peerProps.mic ? 'Disable' : 'Enable'} Microphone</Button>
-                    <Button fullWidth variant='contained' disabled={
+                    <LoadingButton loading={enablingMic} fullWidth variant='contained' disabled={!peerSelectedAudioDevice && !peerActiveAudioDevice && !peerProps.mic} onClick={handleEnableDisableMic}>{peerProps.mic ? 'Disable' : 'Enable'} Microphone</LoadingButton>
+                    <LoadingButton loading={changingMic} fullWidth variant='contained' disabled={
                       peerSelectedAudioDevice &&
                       peerActiveAudioDevice &&
                       peerSelectedAudioDevice.deviceId === peerActiveAudioDevice.deviceId ||
                       !peerSelectedAudioDevice ||
                       !peerActiveAudioDevice
-                    }>Change Microphone</Button>
-                    <Button fullWidth variant='contained' disabled={!peerConnected} onClick={handleStartStopScreenShare}>{peerProps.screen ? 'Stop' : 'Start'} Screen Share</Button>
+                    } onClick={handleChangeMic}>Change Microphone</LoadingButton>
+                    <LoadingButton fullWidth variant='contained' disabled={!peerConnected} onClick={handleStartStopScreenShare} loading={startingScreenShare}>{peerProps.screen ? 'Stop' : 'Start'} Screen Share</LoadingButton>
                   </Stack>
                 </Stack>
               </Grid>
             </Grid>
             <Grid item xs={12} sx={{ height: '80%' }} spacing={2} container>
               <Grid item xs={10}>
-                <Paper elevation={1} className={classes.videoViewer}>
+                <Paper elevation={1} sx={{
+                  height: height - Number(theme.spacing(35).replace('px', '')) - (theme.mixins.toolbar.minHeight ? Number(theme.mixins.toolbar.minHeight.toString().replace('px', '')) : 54),
+                  width: width - Number(theme.spacing(10).replace('px', '')) - 300,
+                }}>
                   {selectedPreview === 'screen' && <video height='100%' width='100%' ref={screenPreviewObjectRef} autoPlay playsInline controls={false}></video>}
                   {selectedPreview === 'webcam' && <video height='100%' width='100%' ref={webcamPreviewObjectRef} autoPlay playsInline controls={false}></video>}
-                  {selectedPreview === 'mic' && <div className={classes.micVolumeContainer}><LinearProgress variant="determinate" value={peerMicVolume * 10} /></div>}
+                  {selectedPreview === 'mic' && <Box sx={{
+                    height: '100%',
+                    width: '100%',
+                    position: 'relative',
+                    '& > *': {
+                      position: 'absolute !important',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      margin: 'auto',
+                      width: '90%',
+                    }
+                  }}><LinearProgress variant="determinate" value={peerMicVolume * 10} /></Box>}
                 </Paper>
               </Grid>
               <Grid item xs={2}>
                 <Stack spacing={2} direction='column' justifyContent='space-between' height='100%'>
                   <Tooltip title='Screen'>
-                    <Paper onClick={handleThumbnailClick('screen')} data-selected={selectedPreview === 'screen'} elevation={1} className={classes.thumbnail}>
+                    <Paper onClick={handleThumbnailClick('screen')} data-selected={selectedPreview === 'screen'} elevation={1} sx={{
+                      height: 175,
+                      with: 300,
+                      '&:hover': {
+                        cursor: 'pointer',
+                        border: '2px solid #ccc',
+                      },
+                      '&[data-selected="true"]': {
+                        cursor: 'pointer',
+                        border: `2px solid ${theme.palette.primary.main}`,
+                      },
+                    }}>
                       <video ref={screenObjectRef} height='100%' width='100%' autoPlay playsInline controls={false}></video>
                     </Paper>
                   </Tooltip>
                   <Tooltip title='Microphone'>
-                    <Paper onClick={handleThumbnailClick('mic')} data-selected={selectedPreview === 'mic'} elevation={1} className={classes.thumbnail}>
-                      <div className={classes.micVolumeContainer}><LinearProgress variant="determinate" value={peerMicVolume * 10} /></div>
+                    <Paper onClick={handleThumbnailClick('mic')} data-selected={selectedPreview === 'mic'} elevation={1} sx={{
+                      height: 175,
+                      with: 300,
+                      '&:hover': {
+                        cursor: 'pointer',
+                        border: '2px solid #ccc',
+                      },
+                      '&[data-selected="true"]': {
+                        cursor: 'pointer',
+                        border: `2px solid ${theme.palette.primary.main}`,
+                      },
+                    }}>
+                      <Box sx={{
+                        height: '100%',
+                        width: '100%',
+                        position: 'relative',
+                        '& > *': {
+                          position: 'absolute !important',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          margin: 'auto',
+                          width: '90%',
+                        }
+                      }}><LinearProgress variant="determinate" value={peerMicVolume * 10} /></Box>
                       <audio ref={audioObjectRef} hidden autoPlay playsInline controls={false}></audio>
                     </Paper>
                   </Tooltip>
                   <Tooltip title='Webcam'>
-                    <Paper onClick={handleThumbnailClick('webcam')} data-selected={selectedPreview === 'webcam'} elevation={1} className={classes.thumbnail}>
+                    <Paper onClick={handleThumbnailClick('webcam')} data-selected={selectedPreview === 'webcam'} elevation={1} sx={{
+                      height: 175,
+                      with: 300,
+                      '&:hover': {
+                        cursor: 'pointer',
+                        border: '2px solid #ccc',
+                      },
+                      '&[data-selected="true"]': {
+                        cursor: 'pointer',
+                        border: `2px solid ${theme.palette.primary.main}`,
+                      },
+                    }}>
                       <video ref={webcamObjectRef} height='100%' width='100%' autoPlay playsInline controls={false}></video>
                     </Paper>
                   </Tooltip>

@@ -3,32 +3,34 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useTitle } from "react-use";
-import { AgentCommandResults, AgentCommands, Agents } from "../models";
+import { AgentActivities, AgentCommandResults, AgentCommands, Agents } from "../models";
 import { FETCH_AGENTS_ACTION, RootState, UPDATE_AGENT, UPDATE_AGENT_COMMAND } from "../redux";
 import { connectAdminWebsocket, websocketService } from "../services";
-import { DataGrid, GridColDef, GridEventListener, GridEvents } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridEventListener, GridEvents, GridSortItem } from '@mui/x-data-grid';
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import { AgentCmdReceived, AgentConnection } from "./agent.view";
 import {
   Circle as CircleIcon,
 } from "@mui/icons-material";
+import moment from "moment";
 
 export const AgentsView = () => {
   const { t } = useTranslation();
   useTitle(`WebBait - ${t('titles.agents')}`);
   const dispatch = useDispatch();
-  const [agents, cmds] = useSelector<RootState, [Agents[], AgentCommands[]]>(state => [state.agents, state.agent_commands], _.isEqual);
+  const [agents, cmds, activities] = useSelector<RootState, [Agents[], AgentCommands[], AgentActivities[]]>(state => [state.agents, state.agent_commands, state.agent_activities], _.isEqual);
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70, type: 'number' },
     { field: 'agentId', headerName: 'Agent ID', flex: 1 },
     { field: 'domain', headerName: 'Domain', flex: 1 },
     { field: 'url', headerName: 'URL', flex: 1 },
+    { field: 'lastSeen', headerName: 'Last Seen', flex: 1, renderCell: ({ value }) => value ? moment(value).format('MMMM Do YYYY, h:mm:ss a') : '????' },
     { field: 'connected', headerName: 'Connected', flex: 1, renderCell: ({ value }) => <CircleIcon color={value ? 'success' : 'disabled'} /> },
   ];
   const [pageSize, setPageSize] = useState(15);
   useEffect(() => {
-    dispatch(FETCH_AGENTS_ACTION());
+    dispatch(FETCH_AGENTS_ACTION({ include: [{ relation: 'activities', scope: { limit: 1, order: ['activityDate DESC'] } }] }));
     connectAdminWebsocket();
   }, []);
   useEffect(() => {
@@ -56,15 +58,22 @@ export const AgentsView = () => {
       websocketService && websocketService.off('result');
     }
   }, [agents]);
+  const agentsWithLastSeen = agents.map(agent => {
+    const activity = _.find(activities, { agentId: agent.id });
+    return { ...agent, lastSeen: activity ? activity.activityDate : undefined }
+  });
   const navigate = useNavigate();
   const handleRowClick: GridEventListener<GridEvents.rowClick> = (row) => {
     navigate(`/agents/${row.row.agentId}`);
   }
+  const [sortModel, setSortModel] = useState<GridSortItem[]>([{ field: 'lastSeen', sort: 'desc' }]);
   return (
     <Paper elevation={3} sx={{ p: 2, m: 2, height: '90vh' }}>
       <DataGrid
-        rows={agents}
+        rows={agentsWithLastSeen}
         columns={columns}
+        sortModel={sortModel}
+        onSortModelChange={setSortModel}
         checkboxSelection
         onRowClick={handleRowClick}
         onCellClick={(__, e) => { e.defaultMuiPrevented = true; }}

