@@ -30,7 +30,7 @@ export const AppContext = React.createContext<AppContextType>({
 export const useAppContext = () => React.useContext(AppContext);
 
 function App() {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [mode, setMode] = useState<'light' | 'dark'>(localStorage.getItem('mode') as 'light' | 'dark' | null || 'light');
   const [language, setLanguage] = useState(i18n.language as 'en' | 'ar');
   useEffect(() => {
     const storedMode = localStorage.getItem('mode');
@@ -66,7 +66,7 @@ function App() {
       <RTL>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <SnackbarProvider>
+          <SnackbarProvider preventDuplicate>
             <Router>
               <MyAppBar />
               <Routes>
