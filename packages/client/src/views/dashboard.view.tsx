@@ -13,7 +13,7 @@ import { connectAdminWebsocket } from "../services";
 const CustomLineTooltip: PointTooltip = ({ point }) => {
   return (
     <Paper elevation={1} sx={{ p: 1 }}>
-      <Typography variant='caption'>{point.data.y}</Typography>
+      <Typography variant='caption'>{point.data.y.toString()}</Typography>
     </Paper>
   );
 }
