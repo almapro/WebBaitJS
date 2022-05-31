@@ -192,12 +192,17 @@ export class WebRtcWebsocket extends Subject<WebRtcSubjects> {
     this.micOnProgress = false;
   }
 
-  disableMic = () => {
-    const producer = this.producers.get('mic');
-    if (!producer) return;
-    producer.close();
-    this.producers.delete('mic');
-    this.socket.emit('micDisabled');
+  disableMic = (callback: ((error?: string) => void)) => {
+    try {
+      const producer = this.producers.get('mic');
+      if (!producer) return;
+      producer.close();
+      this.producers.delete('mic');
+      this.socket.emit('micDisabled');
+      callback();
+    } catch (e: any) {
+      callback(e.message);
+    }
   }
 
   micMuted = () => {
