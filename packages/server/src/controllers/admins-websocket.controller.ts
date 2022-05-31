@@ -87,11 +87,11 @@ export class AdminsWebSocketController {
           this.socket.emit('agent connection', { agentId, connected: true });
         });
       } else {
-        socket.emit('error', `Invalid token: ${token}`);
+        socket.emit('error', `Admin not found: ${userProfile.username}`);
         socket.disconnect();
       }
     } else {
-      socket.emit('error', `Invalid token: ${token}`);
+      socket.emit('error', 'Empty token not allowed');
       socket.disconnect();
     }
   }
