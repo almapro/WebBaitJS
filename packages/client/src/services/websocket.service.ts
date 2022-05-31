@@ -61,6 +61,9 @@ export const connectAdminWebsocket = async () => {
     websocketService.on('error', (msg: string) => {
       if (msg.startsWith('Invalid token')) {
         window.location.reload();
+      } else if (msg.startsWith('Admin not found') || msg.startsWith('Empty token not allowed')) {
+        localStorage.removeItem('WEBBAIT_TOKEN');
+        window.location.reload();
       }
     });
   }
