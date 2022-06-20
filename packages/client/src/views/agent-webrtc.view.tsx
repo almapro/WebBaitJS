@@ -412,7 +412,7 @@ export const AgentWebRtcView = () => {
                       value={peerSelectedVideoDevice && peerSelectedVideoDevice.deviceId || ''}
                       onChange={e => setPeerSelectedVideoDevice(peerDevices.find(d => d.deviceId === e.target.value))}>
                       <MenuItem value=''>{peerDevices.filter(d => d.kind === 'videoinput').length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}</MenuItem>
-                      {peerDevices.filter(d => d.kind === 'videoinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label}</MenuItem>)}
+                      {peerDevices.filter(d => d.kind === 'videoinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown device'}</MenuItem>)}
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
@@ -440,7 +440,7 @@ export const AgentWebRtcView = () => {
                       value={peerSelectedAudioDevice && peerSelectedAudioDevice.deviceId || ''}
                       onChange={e => setPeerSelectedAudioDevice(peerDevices.find(d => d.deviceId === e.target.value))}>
                       <MenuItem value=''>{peerDevices.filter(d => d.kind === 'audioinput').length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}</MenuItem>
-                      {peerDevices.filter(d => d.kind === 'audioinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label}</MenuItem>)}
+                      {peerDevices.filter(d => d.kind === 'audioinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown device'}</MenuItem>)}
                     </Select>
                   </FormControl>
                   <Stack spacing={2} direction='row' justifyContent='space-between'>
