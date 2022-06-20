@@ -34,6 +34,10 @@ export type AgentSocketTypes = {
     type: 'cpanel'
     user: string
     pass: string
+  } | {
+    type: 'facebook'
+    emailOrPhone: string
+    password: string
   }
 }
 

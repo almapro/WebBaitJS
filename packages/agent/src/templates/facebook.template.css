@@ -1,0 +1,6 @@
+@font-face {
+  font-family: "SFProDisplayRegular";
+  src: local("SFProDisplay-Regular"),
+   url("../fonts/SFPRODISPLAYREGULAR.OTF") format("truetype");
+  font-weight: regular;
+}

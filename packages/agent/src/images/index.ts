@@ -3,6 +3,7 @@ import CPanelIconSvg from './cpanel.svg';
 import CPanelUsernameIcon from './cpanel-username.png';
 import CPanelPasswordIcon from './cpanel-password.png';
 import CPanelSmallIconSvg from './cp-small.svg';
+import FacebookIconSvg from './facebook.svg';
 
 export {
   MessengerIconSvg,
@@ -10,4 +11,5 @@ export {
   CPanelUsernameIcon,
   CPanelPasswordIcon,
   CPanelSmallIconSvg,
+  FacebookIconSvg,
 }
