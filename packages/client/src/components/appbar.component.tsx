@@ -44,7 +44,7 @@ export const MyAppBar: FC = () => {
   if (currentNav) currentTitle = currentNav[0];
   else {
     foundNavPath = _.keys(navs).find(nav => {
-      if (nav === '/') return;
+      if (nav === '/') return undefined;
       if (location.pathname.includes(nav)) {
         return nav;
       }

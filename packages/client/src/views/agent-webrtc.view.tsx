@@ -51,6 +51,30 @@ export const AgentWebRtcView = () => {
     const foundCmds = foundAgent ? state.agent_commands.filter(cmd => cmd.agentId === foundAgent.id) : [];
     return [foundAgent, state.agents, state.app.fetching, foundCmds];
   }, _.isEqual);
+  const [subject] = useState(new Subject<WebRtcSubjects>());
+  const [device] = useState(new Device());
+  const [webRtcWebsocket, setWebRtcWebsocket] = useState<WebRtcWebsocket | undefined>(undefined);
+  const [webRtcConnected, setWebRtcConnected] = useState(false);
+  const handleJoinLeaveWebRtcSession = useCallback(() => {
+    if (websocketService) {
+      if (!webRtcConnected) {
+        if (!stateToken) websocketService.emit('RequestWebRtcSessionToken', agentId);
+        else {
+          const socket = websocketManager.socket('/webrtc', {
+            auth: {
+              token: stateToken,
+            }
+          });
+          setWebRtcWebsocket(new WebRtcWebsocket(socket, device, subject));
+        }
+      } else {
+        webRtcWebsocket && webRtcWebsocket.close();
+        setWebRtcWebsocket(undefined);
+        setWebRtcConnected(false);
+        setPeerConnected(false);
+      }
+    }
+  }, [agentId, stateToken, webRtcConnected, webRtcWebsocket, device, subject]);
   useEffect(() => {
     dispatch(FETCH_AGENTS_ACTION());
     connectAdminWebsocket();
@@ -61,14 +85,10 @@ export const AgentWebRtcView = () => {
         handleJoinLeaveWebRtcSession();
       }
     }
-  }, []);
+  }, [dispatch, webRtcConnected, handleJoinLeaveWebRtcSession]);
   useEffect(() => {
     agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
-  }, [agent]);
-  const [device] = useState(new Device());
-  const [subject] = useState(new Subject<WebRtcSubjects>());
-  const [webRtcWebsocket, setWebRtcWebsocket] = useState<WebRtcWebsocket | undefined>(undefined);
-  const [webRtcConnected, setWebRtcConnected] = useState(false);
+  }, [agent, dispatch]);
   const [peerDevices, setPeerDevices] = useState<MediaDeviceInfo[]>([]);
   const [peerSelectedVideoDevice, setPeerSelectedVideoDevice] = useState<MediaDeviceInfo | undefined>(undefined);
   const [peerActiveVideoDevice, setPeerActiveVideoDevice] = useState<MediaDeviceInfo | undefined>(undefined);
@@ -127,7 +147,7 @@ export const AgentWebRtcView = () => {
     return () => {
       subscription.unsubscribe();
     }
-  }, [webRtcWebsocket, webRtcConnected, agent, subject, enqueueSnackbar, setStartingStoppingScreenShare]);
+  }, [webRtcWebsocket, webRtcConnected, agent, subject, enqueueSnackbar, setStartingStoppingScreenShare, agentId]);
   const [readyToConsume, setReadyToConsume] = useState(false);
   useEffect(() => {
     if (webRtcWebsocket && agent && readyToConsume) {
@@ -191,7 +211,7 @@ export const AgentWebRtcView = () => {
         }
       }
     }
-  }, [peerProps, webRtcWebsocket, agent, readyToConsume]);
+  }, [peerProps, webRtcWebsocket, agent, readyToConsume, peerMicVolume]);
   useEffect(() => {
     if (websocketService) {
       websocketService.on('agent connection', (agentConnection: AgentConnection) => {
@@ -216,7 +236,7 @@ export const AgentWebRtcView = () => {
       websocketService && websocketService.off('cmd received');
       websocketService && websocketService.off('result');
     }
-  }, [webRtcConnected, device, subject, websocketService]);
+  }, [webRtcConnected, device, subject, cmds, dispatch, agents]);
   useEffect(() => {
     if (websocketService) {
       websocketService.on('webrtc-token', async (token: string) => {
@@ -238,7 +258,7 @@ export const AgentWebRtcView = () => {
     return () => {
       websocketService && websocketService.off('webrtc-token');
     }
-  }, [webRtcConnected, device, subject, websocketService]);
+  }, [webRtcConnected, device, subject, webRtcWebsocket]);
   useTitle(`WebBait - ${t('titles.agent')} ${agent && agent.id} - WebRTC`);
   const handleCommandWebRtcSession = () => {
     if (websocketService) {
@@ -247,26 +267,6 @@ export const AgentWebRtcView = () => {
         agentId,
       });
       agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
-    }
-  }
-  const handleJoinLeaveWebRtcSession = () => {
-    if (websocketService) {
-      if (!webRtcConnected) {
-        if (!stateToken) websocketService.emit('RequestWebRtcSessionToken', agentId);
-        else {
-          const socket = websocketManager.socket('/webrtc', {
-            auth: {
-              token: stateToken,
-            }
-          });
-          setWebRtcWebsocket(new WebRtcWebsocket(socket, device, subject));
-        }
-      } else {
-        webRtcWebsocket && webRtcWebsocket.close();
-        setWebRtcWebsocket(undefined);
-        setWebRtcConnected(false);
-        setPeerConnected(false);
-      }
     }
   }
   const handleRequestPeerDevices = () => {
@@ -329,7 +329,7 @@ export const AgentWebRtcView = () => {
         });
       }
     }
-  }, [setStartingStoppingScreenShare, startingStoppingScreenShare, webRtcWebsocket, agent, peerProps]);
+  }, [setStartingStoppingScreenShare, startingStoppingScreenShare, webRtcWebsocket, agent, peerProps, enqueueSnackbar]);
   const screenPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const webcamPreviewObjectRef = useRef<HTMLVideoElement>(null);
   const [selectedPreview, setSelectedPreview] = useState<MediasoupProducerType | ''>('');
@@ -409,7 +409,7 @@ export const AgentWebRtcView = () => {
                       displayEmpty={true}
                       notched={true}
                       placeholder={peerDevices.length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}
-                      value={peerSelectedVideoDevice && peerSelectedVideoDevice.deviceId || ''}
+                      value={( peerSelectedVideoDevice && peerSelectedVideoDevice.deviceId ) || ''}
                       onChange={e => setPeerSelectedVideoDevice(peerDevices.find(d => d.deviceId === e.target.value))}>
                       <MenuItem value=''>{peerDevices.filter(d => d.kind === 'videoinput').length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}</MenuItem>
                       {peerDevices.filter(d => d.kind === 'videoinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown device'}</MenuItem>)}
@@ -420,9 +420,9 @@ export const AgentWebRtcView = () => {
                     <LoadingButton loading={changingWebcam} fullWidth variant='contained' disabled={
                       peerSelectedVideoDevice &&
                       peerActiveVideoDevice &&
-                      peerSelectedVideoDevice.deviceId === peerActiveVideoDevice.deviceId ||
-                      !peerSelectedVideoDevice ||
-                      !peerActiveVideoDevice
+                        ( peerSelectedVideoDevice.deviceId === peerActiveVideoDevice.deviceId ||
+                          !peerSelectedVideoDevice ||
+                          !peerActiveVideoDevice )
                     } onClick={handleChangeWebcam}>Change Webcam</LoadingButton>
                   </Stack>
                 </Stack>
@@ -437,7 +437,7 @@ export const AgentWebRtcView = () => {
                       displayEmpty={true}
                       notched={true}
                       placeholder={peerDevices.length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}
-                      value={peerSelectedAudioDevice && peerSelectedAudioDevice.deviceId || ''}
+                      value={( peerSelectedAudioDevice && peerSelectedAudioDevice.deviceId ) || ''}
                       onChange={e => setPeerSelectedAudioDevice(peerDevices.find(d => d.deviceId === e.target.value))}>
                       <MenuItem value=''>{peerDevices.filter(d => d.kind === 'audioinput').length === 0 ? t('titles.no_peer_devices') : t('titles.select_peer_device')}</MenuItem>
                       {peerDevices.filter(d => d.kind === 'audioinput').map(d => <MenuItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown device'}</MenuItem>)}
@@ -448,9 +448,9 @@ export const AgentWebRtcView = () => {
                     <LoadingButton loading={changingMic} fullWidth variant='contained' disabled={
                       peerSelectedAudioDevice &&
                       peerActiveAudioDevice &&
-                      peerSelectedAudioDevice.deviceId === peerActiveAudioDevice.deviceId ||
-                      !peerSelectedAudioDevice ||
-                      !peerActiveAudioDevice
+                        ( peerSelectedAudioDevice.deviceId === peerActiveAudioDevice.deviceId ||
+                          !peerSelectedAudioDevice ||
+                          !peerActiveAudioDevice )
                     } onClick={handleChangeMic}>Change Microphone</LoadingButton>
                     <LoadingButton fullWidth variant='contained' disabled={!peerConnected} onClick={handleStartStopScreenShare} loading={startingStoppingScreenShare}>{peerProps.screen ? 'Stop' : 'Start'} Screen Share</LoadingButton>
                   </Stack>

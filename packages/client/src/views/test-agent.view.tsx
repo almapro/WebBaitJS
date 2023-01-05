@@ -77,7 +77,7 @@ export const RowOptionsCell: FC<{
     return () => {
       subscription.unsubscribe();
     }
-  }, [webRtcWebsocket]);
+  }, [webRtcWebsocket, subject]);
   if (cmd) {
     switch (cmd.cmd) {
       case 'init-webrtc-device':

@@ -1,5 +1,4 @@
 import { put, all, takeLatest, delay, race, call } from 'redux-saga/effects';
-import _ from 'lodash';
 import { createAction } from '@reduxjs/toolkit';
 import { SET_ACTION_ERROR, SET_ACTION_ERROR_MESSAGE, SET_LOGGED_IN, SET_LOGGED_OUT, SET_SUBMITTING, SET_USERNAME } from '../slicers';
 import { userService } from '../../services';

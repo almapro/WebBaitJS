@@ -55,24 +55,17 @@
 		"web-vitals": "^2.1.4"
 	},
 	"scripts": {
-		"start": "cross-env PORT=3002 react-scripts start",
+		"start": "cross-env PORT=3002 HTTPS=true SSL_CRT_FILE=client.crt SSL_KEY_FILE=client.key REACT_APP_WS_URL='wss://$IP:3001' REACT_APP_API_BASE='https://$IP:3001'  REACT_APP_C2_URL='https://$IP:3001' react-scripts start",
 		"dev:network": "cross-env PORT=3002 HTTPS=true SSL_CRT_FILE=client.crt SSL_KEY_FILE=client.key REACT_APP_WS_URL='wss://$IP:3001' REACT_APP_API_BASE='https://$IP:3001'  REACT_APP_C2_URL='https://$IP:3001' react-scripts start",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject"
 	},
 	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		]
+		"extends": ["react-app", "react-app/jest"]
 	},
 	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
+		"production": [">0.2%", "not dead", "not op_mini all"],
 		"development": [
 			"last 1 chrome version",
 			"last 1 firefox version",

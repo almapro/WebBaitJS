@@ -56,7 +56,7 @@ function App() {
     localStorage.setItem('mode', mode);
     document.body.style.direction = language === 'ar' ? 'rtl' : 'ltr';
     setTheme(createThemeCallback());
-  }, [language, mode]);
+  }, [language, mode, createThemeCallback]);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(CHECK_LOGGED_ACTION());

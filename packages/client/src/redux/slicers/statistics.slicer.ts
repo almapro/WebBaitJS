@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import _ from "lodash";
 import sunburstData from '../../sunburst.json';
 import lineData from '../../line.json';
 

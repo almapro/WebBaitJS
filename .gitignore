@@ -16,3 +16,4 @@ packages/server/root-ca.srl
 packages/server/server.crt
 packages/server/server.csr
 packages/server/server.key
+packages/.pnpm-debug.log

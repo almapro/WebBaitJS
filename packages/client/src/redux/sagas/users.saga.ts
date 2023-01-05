@@ -1,5 +1,4 @@
 import { put, all, takeLatest, delay, race, call } from 'redux-saga/effects';
-import _ from 'lodash';
 import { createAction } from '@reduxjs/toolkit';
 import { Users } from '../../models';
 import { ADD_USER, DELETE_USER, SET_USERS, SET_FETCHING, SET_SUBMITTING, UPDATE_USER } from '../slicers';

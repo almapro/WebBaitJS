@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import _ from 'lodash';
 
 export type AppSlicerState = {
   loggedIn: boolean;

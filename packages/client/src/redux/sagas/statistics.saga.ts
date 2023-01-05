@@ -1,5 +1,4 @@
 import { put, all, takeLatest, delay, race, call } from 'redux-saga/effects';
-import _ from 'lodash';
 import { createAction } from '@reduxjs/toolkit';
 import { statisticsService } from '../../services';
 import { AxiosResponse } from 'axios';

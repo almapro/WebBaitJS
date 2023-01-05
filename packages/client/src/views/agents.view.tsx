@@ -32,7 +32,7 @@ export const AgentsView = () => {
   useEffect(() => {
     dispatch(FETCH_AGENTS_ACTION({ include: [{ relation: 'activities', scope: { limit: 1, order: ['activityDate DESC'] } }] }));
     connectAdminWebsocket();
-  }, []);
+  }, [dispatch]);
   useEffect(() => {
     if (websocketService) {
       websocketService.on('agent connection', (agentConnection: AgentConnection) => {
@@ -57,7 +57,7 @@ export const AgentsView = () => {
       websocketService && websocketService.off('cmd received');
       websocketService && websocketService.off('result');
     }
-  }, [agents]);
+  }, [agents, cmds, dispatch]);
   const agentsWithLastSeen = agents.map(agent => {
     const activity = _.find(activities, { agentId: agent.id });
     return { ...agent, lastSeen: activity ? activity.activityDate : undefined }

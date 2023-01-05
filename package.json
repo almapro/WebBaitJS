@@ -6,11 +6,9 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^6.3.0"
   },
-  "scripts": {
-    "start": "lerna run start"
-  },
+  "scripts": {},
   "dependencies": {
     "lodash": "^4.17.21"
   }

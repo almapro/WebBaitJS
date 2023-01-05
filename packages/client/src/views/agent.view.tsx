@@ -195,10 +195,10 @@ export const AgentView = () => {
   useEffect(() => {
     dispatch(FETCH_AGENTS_ACTION());
     connectAdminWebsocket();
-  }, []);
+  }, [dispatch]);
   useEffect(() => {
     agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
-  }, [agent]);
+  }, [agent, dispatch]);
   useEffect(() => {
     if (websocketService) {
       websocketService.on('webrtc-token', (token: string) => {
@@ -227,7 +227,7 @@ export const AgentView = () => {
       websocketService && websocketService.off('cmd received');
       websocketService && websocketService.off('result');
     }
-  }, [cmds]);
+  }, [cmds, dispatch, agents, agentId, enqueueSnackbar, navigate]);
   useTitle(`WebBait - ${t('titles.agent')} ${agent && agent.id}`);
   const actionOptions: ActionsButtonOption[] = [
     {
@@ -241,7 +241,7 @@ export const AgentView = () => {
           agent && dispatch(FETCH_AGENT_COMMANDS_ACTION({ include: ['result'] }, { id: agent.id }));
         }
       },
-      enabled: () => agent && agent.connected || false,
+      enabled: () => ( agent && agent.connected ) || false,
     },
     {
       label: 'Set Template',

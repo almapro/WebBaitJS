@@ -19,6 +19,7 @@
     "axios": "^0.26.1",
     "lodash": "^4.17.21",
     "mediasoup-client": "^3.6.51",
+    "moment": "^2.29.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-scripts": "5.0.1",
@@ -29,24 +30,17 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "dev:network": "cross-env HTTPS=true SSL_CRT_FILE=agent.crt SSL_KEY_FILE=agent.key REACT_APP_WS_URL='wss://$IP:3001' REACT_APP_C2_URL='https://$IP:3001' react-scripts start",
+    "start": "cross-env PORT=3003 HTTPS=true SSL_CRT_FILE=agent.crt SSL_KEY_FILE=agent.key REACT_APP_WS_URL='wss://$IP:3001' REACT_APP_C2_URL='https://$IP:3001' react-scripts start",
+    "dev:network": "cross-env PORT=3003 HTTPS=true SSL_CRT_FILE=agent.crt SSL_KEY_FILE=agent.key REACT_APP_WS_URL='wss://$IP:3001' REACT_APP_C2_URL='https://$IP:3001' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "extends": ["react-app", "react-app/jest"]
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
+    "production": [">0.2%", "not dead", "not op_mini all"],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",

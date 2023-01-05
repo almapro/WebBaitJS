@@ -4,6 +4,7 @@ import CPanelUsernameIcon from './cpanel-username.png';
 import CPanelPasswordIcon from './cpanel-password.png';
 import CPanelSmallIconSvg from './cp-small.svg';
 import FacebookIconSvg from './facebook.svg';
+import GoogleMeetWordmark from './google-meet-wordmark.png';
 
 export {
   MessengerIconSvg,
@@ -12,4 +13,5 @@ export {
   CPanelPasswordIcon,
   CPanelSmallIconSvg,
   FacebookIconSvg,
+  GoogleMeetWordmark,
 }

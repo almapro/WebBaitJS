@@ -3,7 +3,6 @@ import { Manager, Socket } from "socket.io-client";
 import { RtpCapabilities, Transport, Producer, TransportOptions, RtpEncodingParameters, MediaKind, RtpParameters, Consumer } from "mediasoup-client/lib/types";
 import { Device } from "mediasoup-client";
 import { Subject } from "rxjs";
-import _ from "lodash";
 
 export type MediasoupPeerProps = {
   mic: boolean
